@@ -51,9 +51,9 @@
             this.ClientSize = new System.Drawing.Size(760, 585);
             this.Controls.Add(this.messageLabel);
             this.Font = new System.Drawing.Font("Microsoft Sans Serif", 10.2F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            this.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.Margin = new System.Windows.Forms.Padding(4);
             this.Name = "MainWindow";
-            this.Text = "MainWindow";
+            this.Text = "Factory Sheduler";
             this.WindowState = System.Windows.Forms.FormWindowState.Maximized;
             this.Shown += new System.EventHandler(this.MainWindow_Shown);
             this.ResumeLayout(false);

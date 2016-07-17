@@ -16,21 +16,28 @@ namespace FactorySheduler
 
         public Cart(string ip) {
             this.ip = ip;
-            
+            client = new RestClient("http://" + ip + "/");
             // client.Authenticator = new HttpBasicAuthenticator(username, password);
         }
 
         public bool checkConnection() {
-            client = new RestClient("http://" + ip + "/");
-            RestRequest request = new RestRequest("arduino/{order}/", Method.GET);
-            request.AddUrlSegment("order", "digital"); // replaces matching token in request.Resource
+            RestRequest request = new RestRequest("arduino/check/", Method.GET);
+
+            //RestRequest request = new RestRequest("arduino/{order}/", Method.GET);
+            //request.AddUrlSegment("order", "digital"); // replaces matching token in request.Resource
 
             // execute the request
             IRestResponse response = client.Execute(request);
             HttpStatusCode status = response.StatusCode;
             if (status == HttpStatusCode.OK)
             {
-                return true;
+                if (response.Content.Trim() == "NVC8mK73kAoXzLAYxFMo")
+                {
+                    return true;
+                }
+                else {
+                    return false;
+                }
             }
             else {
                 return false;
