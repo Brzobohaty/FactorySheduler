@@ -29,6 +29,7 @@
         private void InitializeComponent()
         {
             this.messageLabel = new System.Windows.Forms.Label();
+            this.panelView = new System.Windows.Forms.Panel();
             this.SuspendLayout();
             // 
             // messageLabel
@@ -44,11 +45,22 @@
             this.messageLabel.TabIndex = 0;
             this.messageLabel.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
+            // panelView
+            // 
+            this.panelView.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.panelView.Location = new System.Drawing.Point(0, 0);
+            this.panelView.Name = "panelView";
+            this.panelView.Size = new System.Drawing.Size(760, 534);
+            this.panelView.TabIndex = 1;
+            // 
             // MainWindow
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(10F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(760, 585);
+            this.Controls.Add(this.panelView);
             this.Controls.Add(this.messageLabel);
             this.Font = new System.Drawing.Font("Microsoft Sans Serif", 10.2F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
             this.Margin = new System.Windows.Forms.Padding(4);
@@ -63,5 +75,6 @@
         #endregion
 
         private System.Windows.Forms.Label messageLabel;
+        private System.Windows.Forms.Panel panelView;
     }
 }

@@ -12,8 +12,9 @@ namespace FactorySheduler.Views
 {
     public partial class NetworkScanView : UserControl
     {
-        private static NetworkScanView instance = new NetworkScanView();
-        private Dictionary<String, ListViewItem> ipItems = new Dictionary<String, ListViewItem>();
+        private static NetworkScanView instance = new NetworkScanView(); //instance této třídy
+        private Dictionary<String, ListViewItem> ipItems = new Dictionary<String, ListViewItem>(); //slovník všech nalezených zařízení v seznamu podle jejich IP
+        private Action buttonNextClickCallback;
 
         private NetworkScanView()
         {
@@ -25,18 +26,40 @@ namespace FactorySheduler.Views
             return instance;
         }
 
+        /// <summary>
+        /// Zapsání posluchače pro stisknutí tlačítka pokračování
+        /// </summary>
+        /// <param name="callback"></param>
+        public void subscribeButtonNextListener(Action callback)
+        {
+            this.buttonNextClickCallback = callback;
+        }
+
+        /// <summary>
+        /// Přidá do seznamu nalezených zařízení další IP
+        /// </summary>
+        /// <param name="ip">IP nalezeného zařízení</param>
         public void addDeviceIP(string ip) {
             ListViewItem item = new ListViewItem(ip);
             listView1.Items.Add(item);
             ipItems.Add(ip,item);
         }
 
+        /// <summary>
+        /// Zobrazí IP adresu počítače, na kterém je aplikace spuštěna
+        /// </summary>
+        /// <param name="ip"></param>
         public void showThisDeviceIP(string ip) {
             labelThisDeviceIP.Text = ip;
             string ipPrefix = ip.Substring(0, ip.LastIndexOf(".") + 1);
             labelDvicesIPs.Text = labelDvicesIPs.Text+ipPrefix+"*";
         }
 
+        /// <summary>
+        /// Označí IP v seznamu příslušnou barvou, podle toho, zda se jedná o vyhovující zařízení nebo ne
+        /// </summary>
+        /// <param name="ip">IP zařízení</param>
+        /// <param name="isCart">Je to vozík s Arduino zařízením?</param>
         public void setIPStatus(string ip, bool isCart) {
             ListViewItem item = ipItems[ip];
             
@@ -51,6 +74,10 @@ namespace FactorySheduler.Views
 
         delegate void SetCountLabelCallback(int count);
 
+        /// <summary>
+        /// Nastaví počet nalezených kompatibilních arduino zařízení
+        /// </summary>
+        /// <param name="count">počet vyhovujících zařízení</param>
         public void setCountLabel(int count) {
             if (labelCount.InvokeRequired)
             {
@@ -61,6 +88,29 @@ namespace FactorySheduler.Views
             {
                 labelCount.Text = "Bylo nalezeno " + count + " kompatibilních a funkčních zařízení.";
             }
+        }
+
+        delegate void EnableNextButtonCallback();
+
+        /// <summary>
+        /// Zapne tlačítko pro pokračování
+        /// </summary>
+        public void enableNextButton() {
+            if (buttonNext.InvokeRequired)
+            {
+                EnableNextButtonCallback cb = new EnableNextButtonCallback(enableNextButton);
+                this.Invoke(cb, new object[] {});
+            }
+            else
+            {
+                buttonNext.Enabled = true;
+            }
+            
+        }
+        
+        private void buttonNext_Click(object sender, EventArgs e)
+        {
+            buttonNextClickCallback();
         }
     }
 }

@@ -33,6 +33,7 @@
             this.listView1 = new System.Windows.Forms.ListView();
             this.labelDvicesIPs = new System.Windows.Forms.Label();
             this.labelCount = new System.Windows.Forms.Label();
+            this.buttonNext = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // label1
@@ -74,18 +75,29 @@
             // 
             // labelCount
             // 
-            this.labelCount.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left)));
+            this.labelCount.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.labelCount.AutoSize = true;
-            this.labelCount.Location = new System.Drawing.Point(32, 679);
+            this.labelCount.Location = new System.Drawing.Point(32, 647);
             this.labelCount.Name = "labelCount";
             this.labelCount.Size = new System.Drawing.Size(0, 17);
             this.labelCount.TabIndex = 3;
+            // 
+            // buttonNext
+            // 
+            this.buttonNext.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.buttonNext.Location = new System.Drawing.Point(766, 641);
+            this.buttonNext.Name = "buttonNext";
+            this.buttonNext.Size = new System.Drawing.Size(117, 28);
+            this.buttonNext.TabIndex = 4;
+            this.buttonNext.Text = "Pokračovat";
+            this.buttonNext.UseVisualStyleBackColor = true;
+            this.buttonNext.Click += new System.EventHandler(this.buttonNext_Click);
             // 
             // NetworkScanView
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.Controls.Add(this.buttonNext);
             this.Controls.Add(this.labelCount);
             this.Controls.Add(this.labelDvicesIPs);
             this.Controls.Add(this.listView1);
@@ -105,5 +117,6 @@
         private System.Windows.Forms.ListView listView1;
         private System.Windows.Forms.Label labelDvicesIPs;
         private System.Windows.Forms.Label labelCount;
+        private System.Windows.Forms.Button buttonNext;
     }
 }

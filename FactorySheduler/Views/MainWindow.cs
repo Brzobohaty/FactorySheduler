@@ -23,12 +23,22 @@ namespace FactorySheduler.Views
             networkScanView = NetworkScanView.getInstance();
             networkScanView.Dock = DockStyle.Fill;
 
-            this.Controls.Add(networkScanView);
+            panelView.Controls.Add(networkScanView);
         }
 
         public static MainWindow getInstance()
         {
             return instance;
+        }
+
+        /// <summary>
+        /// Nastaví view, které se má v hlavním okně zobrazit
+        /// </summary>
+        /// <param name="view">view, které se má zobrazit</param>
+        public void setView(UserControl view) {
+            panelView.Controls.Clear();
+            view.Dock = DockStyle.Fill;
+            panelView.Controls.Add(view);
         }
 
         /// <summary>

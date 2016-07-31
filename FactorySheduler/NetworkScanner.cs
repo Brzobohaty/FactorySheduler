@@ -9,10 +9,13 @@ using System.Threading.Tasks;
 
 namespace FactorySheduler
 {
+    /// <summary>
+    /// Skener sítě, hledající arduino zařízení na vozících
+    /// </summary>
     class NetworkScanner
     {
-        public string thisDeviceIP { get; private set; }
-        private Action<string> iPFoundObserver;
+        public string thisDeviceIP { get; private set; } // IP tohoto zařízení
+        private Action<string> iPFoundObserver; //callback pro nalezení zařízení
 
         public NetworkScanner()
         {
@@ -22,11 +25,19 @@ namespace FactorySheduler
             }
         }
 
+        /// <summary>
+        /// Zapsání posluchače pro dokončení ping příkazu pro jednu IP
+        /// </summary>
+        /// <param name="observer"></param>
         public void subscribeIPFoundObserver(Action<string> observer)
         {
             iPFoundObserver = observer;
         }
 
+        /// <summary>
+        /// Vrátí IP tohoto zařízení
+        /// </summary>
+        /// <returns>ip</returns>
         private string getThisDeviceIp() {
             NetworkInterface[] interfaces = NetworkInterface.GetAllNetworkInterfaces();
             interfaces = interfaces.Where(i => i.NetworkInterfaceType == NetworkInterfaceType.Wireless80211 && i.OperationalStatus == OperationalStatus.Up).ToArray();
@@ -44,6 +55,11 @@ namespace FactorySheduler
             return ipInfo[0].Address.ToString();
         }
 
+        /// <summary>
+        /// Skenuje sít pro libovolná zařízení
+        /// Hledá se v 254 adres, které se liší od adresy tohot počítače pouze v posledním oktetu
+        /// </summary>
+        /// <param name="ip">IP zařízení, z kterého je tato aplikace spuštěna</param>
         public void scanNetwork(string ip) {
             string ipPrefix = thisDeviceIP.Substring(0, thisDeviceIP.LastIndexOf(".")+1);
 
@@ -78,6 +94,9 @@ namespace FactorySheduler
             }
         }
 
+        /// <summary>
+        /// Callback, že jeden ping příkaz byl dokončen
+        /// </summary>
         private void PingCompletedCallback(object sender, PingCompletedEventArgs e)
         {
             // If the operation was canceled, display a message to the user.
@@ -98,13 +117,17 @@ namespace FactorySheduler
 
             PingReply reply = e.Reply;
 
-            DisplayReply(reply);
+            sendResult(reply);
 
             // Let the main thread resume.
             ((AutoResetEvent)e.UserState).Set();
         }
 
-        private void DisplayReply(PingReply reply)
+        /// <summary>
+        /// Odeslání výsledku ping příkazu observeroj
+        /// </summary>
+        /// <param name="reply"></param>
+        private void sendResult(PingReply reply)
         {
             if (reply == null)
                 return;
