@@ -108,14 +108,14 @@
             this.splitContainer1.SplitterDistance = 664;
             this.splitContainer1.TabIndex = 11;
             // 
-            // UltrasonicSystemScanView
+            // MapView
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.Controls.Add(this.splitContainer1);
             this.Controls.Add(this.buttonsLayout);
             this.Controls.Add(this.labelDvicesIPs);
-            this.Name = "UltrasonicSystemScanView";
+            this.Name = "MapView";
             this.Size = new System.Drawing.Size(920, 724);
             this.panel1.ResumeLayout(false);
             this.splitContainer1.Panel1.ResumeLayout(false);

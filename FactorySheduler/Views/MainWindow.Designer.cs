@@ -30,6 +30,7 @@
         {
             this.messageLabel = new System.Windows.Forms.Label();
             this.panelView = new System.Windows.Forms.Panel();
+            this.progressBar = new System.Windows.Forms.ProgressBar();
             this.SuspendLayout();
             // 
             // messageLabel
@@ -38,10 +39,10 @@
             this.messageLabel.Dock = System.Windows.Forms.DockStyle.Bottom;
             this.messageLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 10.2F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
             this.messageLabel.ForeColor = System.Drawing.Color.Red;
-            this.messageLabel.Location = new System.Drawing.Point(0, 534);
+            this.messageLabel.Location = new System.Drawing.Point(0, 550);
             this.messageLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.messageLabel.Name = "messageLabel";
-            this.messageLabel.Size = new System.Drawing.Size(760, 51);
+            this.messageLabel.Size = new System.Drawing.Size(760, 35);
             this.messageLabel.TabIndex = 0;
             this.messageLabel.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
@@ -55,11 +56,21 @@
             this.panelView.Size = new System.Drawing.Size(760, 534);
             this.panelView.TabIndex = 1;
             // 
+            // progressBar
+            // 
+            this.progressBar.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.progressBar.Location = new System.Drawing.Point(0, 537);
+            this.progressBar.Name = "progressBar";
+            this.progressBar.Size = new System.Drawing.Size(760, 10);
+            this.progressBar.TabIndex = 13;
+            // 
             // MainWindow
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(10F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(760, 585);
+            this.Controls.Add(this.progressBar);
             this.Controls.Add(this.panelView);
             this.Controls.Add(this.messageLabel);
             this.Font = new System.Drawing.Font("Microsoft Sans Serif", 10.2F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
@@ -76,5 +87,6 @@
 
         private System.Windows.Forms.Label messageLabel;
         private System.Windows.Forms.Panel panelView;
+        private System.Windows.Forms.ProgressBar progressBar;
     }
 }

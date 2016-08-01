@@ -25,9 +25,10 @@ namespace FactorySheduler
         [DisplayName("IP adresa")]
         [Description("IP adresa Arduino zařízení na vozíku.")]
         public string ip { get; private set; } //ip adresa Arduino zařízení
+        [ReadOnly(true)]
         [DisplayName("Chybová hláška")]
         [Description("V případě, že nastala nějaká chyba, proměnná obsahuje chybovou hlášku.")]
-        public string errorMessage { get; private set; } //pokud nastala nějaká chyba, bude tato proměnná obsahovat chybovou hlášku, jinak ""
+        public string errorMessage { get; set; } //pokud nastala nějaká chyba, bude tato proměnná obsahovat chybovou hlášku, jinak ""
         [DisplayName("Pozice")]
         [Description("Poslední známá pozice majáku.")]
         public Point position { get; private set; } //poslední známá pozice

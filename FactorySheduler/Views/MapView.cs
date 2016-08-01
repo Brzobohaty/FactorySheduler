@@ -47,6 +47,13 @@ namespace FactorySheduler.Views
         }
 
         /// <summary>
+        /// Proskenuje všechny změny a náležitě je zobrazí
+        /// </summary>
+        public void refreshAll() {
+            propertyGrid.Refresh();
+        }
+
+        /// <summary>
         /// Ukáže všechny proměnné daného vozíku
         /// </summary>
         /// <param name="cart">vozík, jehož proměnné se mají zobrazit</param>

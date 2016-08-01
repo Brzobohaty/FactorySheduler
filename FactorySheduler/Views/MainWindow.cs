@@ -87,5 +87,14 @@ namespace FactorySheduler.Views
                 messageLabel.Text = message;
             }
         }
+
+        /// <summary>
+        /// Nastaví hodnotu progress baru
+        /// </summary>
+        /// <param name="value">hodnota od 0 do 100</param>
+        public void setProgress(int value) {
+            progressBar.Value = value;
+            progressBar.Refresh();
+        }
     }
 }
