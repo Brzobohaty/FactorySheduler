@@ -16,6 +16,8 @@ namespace FactorySheduler
     {
         public string thisDeviceIP { get; private set; } // IP tohoto zařízení
         private Action<string> iPFoundObserver; //callback pro nalezení zařízení
+        private int countOfDoneTestedAdresses = 0; //Počet již otestovaných adres
+        private Action finishCallback; //callback, že byly proskenovány všechny adresy
 
         public NetworkScanner()
         {
@@ -60,10 +62,11 @@ namespace FactorySheduler
         /// Hledá se v 254 adres, které se liší od adresy tohot počítače pouze v posledním oktetu
         /// </summary>
         /// <param name="ip">IP zařízení, z kterého je tato aplikace spuštěna</param>
-        public void scanNetwork(string ip) {
+        public void scanNetwork(string ip, Action finishCallback) {
+            this.finishCallback = finishCallback;
             string ipPrefix = thisDeviceIP.Substring(0, thisDeviceIP.LastIndexOf(".")+1);
 
-            for (int i = 1; i < 255; i++)
+            for (int i = 1; i <= 254; i++)
             {
                 string who = ipPrefix + i;
                 AutoResetEvent waiter = new AutoResetEvent(false);
@@ -99,22 +102,6 @@ namespace FactorySheduler
         /// </summary>
         private void PingCompletedCallback(object sender, PingCompletedEventArgs e)
         {
-            // If the operation was canceled, display a message to the user.
-            if (e.Cancelled)
-            {
-                // Let the main thread resume. 
-                // UserToken is the AutoResetEvent object that the main thread 
-                // is waiting for.
-                ((AutoResetEvent)e.UserState).Set();
-            }
-
-            // If an error occurred, display the exception to the user.
-            if (e.Error != null)
-            {
-                // Let the main thread resume. 
-                ((AutoResetEvent)e.UserState).Set();
-            }
-
             PingReply reply = e.Reply;
 
             sendResult(reply);
@@ -129,6 +116,10 @@ namespace FactorySheduler
         /// <param name="reply"></param>
         private void sendResult(PingReply reply)
         {
+            countOfDoneTestedAdresses++;
+            if (countOfDoneTestedAdresses == 254) {
+                finishCallback();
+            }
             if (reply == null)
                 return;
 

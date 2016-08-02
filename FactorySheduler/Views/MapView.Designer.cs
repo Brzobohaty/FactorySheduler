@@ -28,12 +28,14 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             this.labelDvicesIPs = new System.Windows.Forms.Label();
             this.listView1 = new System.Windows.Forms.ListView();
             this.panel1 = new System.Windows.Forms.Panel();
             this.propertyGrid = new System.Windows.Forms.PropertyGrid();
             this.buttonsLayout = new System.Windows.Forms.FlowLayoutPanel();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
+            this.timerRefresh = new System.Windows.Forms.Timer(this.components);
             this.panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
@@ -108,6 +110,11 @@
             this.splitContainer1.SplitterDistance = 664;
             this.splitContainer1.TabIndex = 11;
             // 
+            // timerRefresh
+            // 
+            this.timerRefresh.Interval = 300;
+            this.timerRefresh.Tick += new System.EventHandler(this.timerRefresh_Tick);
+            // 
             // MapView
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
@@ -133,5 +140,6 @@
         private System.Windows.Forms.PropertyGrid propertyGrid;
         private System.Windows.Forms.FlowLayoutPanel buttonsLayout;
         private System.Windows.Forms.SplitContainer splitContainer1;
+        private System.Windows.Forms.Timer timerRefresh;
     }
 }

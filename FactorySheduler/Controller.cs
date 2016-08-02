@@ -39,7 +39,7 @@ namespace FactorySheduler
             {
                 mainWindow.showMessage(MessageTypeEnum.progress, "Hledám a rozeznávám zařízení v síti ...");
                 networkScannerView.showThisDeviceIP(networkScanner.thisDeviceIP);
-                networkScanner.scanNetwork(networkScanner.thisDeviceIP);
+                networkScanner.scanNetwork(networkScanner.thisDeviceIP, finishIPSearching);
             }
             else {
                 mainWindow.showMessage(MessageTypeEnum.error, "Není připojena žádná vyhovující WiFi síť.");
@@ -53,54 +53,63 @@ namespace FactorySheduler
         private void createCart(string ip)
         {
             Cart cart = new Cart(ip, dashboard);
+            carts.Add(ip, cart);
             networkScannerView.addDeviceIP(ip);
             needCheckCount++;
-
-            var t = Task.Run(() =>
-            {
-                if (cart.checkConnectionToArduino())
-                {
-                    carts.Add(ip, cart);
-                    networkScannerView.setIPStatus(ip, true);
-                }
-                else {
-                    networkScannerView.setIPStatus(ip, false);
-                }
-                needCheckCount--;
-            });
-
-            createPeriodicCheckerOfFinishSearching();
-
-            t.Wait();
         }
 
-        private System.Timers.Timer periodicCheckerOfFinishSearching;
+        /// <summary>
+        /// Callback pro dokončení hledání IP, na kterých by mohlo být arduino zařízení
+        /// </summary>
+        private void finishIPSearching() {
+            List<Cart> cartsList = carts.Values.ToList();
+            int cartsCount = cartsList.Count();
+            for (int j = 0; j < cartsCount; j++)
+            {
+                Cart cart = cartsList[j];
+                BackgroundWorker bw = new BackgroundWorker();
+                bw.WorkerReportsProgress = true;
+
+                bw.DoWork += new DoWorkEventHandler(delegate (object o, DoWorkEventArgs args)
+                {
+                    if (cart.checkConnectionToArduino())
+                    {
+                        networkScannerView.setIPStatus(cart.ip, true);
+                    }
+                    else {
+                        carts.Remove(cart.ip);
+                        networkScannerView.setIPStatus(cart.ip, false);
+                    }
+                });
+
+                // what to do when worker completes its task (notify the user)
+                bw.RunWorkerCompleted += new RunWorkerCompletedEventHandler(delegate (object o, RunWorkerCompletedEventArgs args)
+                {
+                    needCheckCount--;
+                    if (needCheckCount == 0)
+                    {
+                        createPeriodicCheckerOfFinishSearching();
+                    }
+                });
+
+                bw.RunWorkerAsync();
+            }
+        }
 
         /// <summary>
-        /// Periodiccká kontrola dokončení skenování sítě
+        /// Dokončení skenování sítě
         /// </summary>
         private void createPeriodicCheckerOfFinishSearching()
         {
-            periodicCheckerOfFinishSearching = new System.Timers.Timer();
-            periodicCheckerOfFinishSearching.Interval = 10000;
-            periodicCheckerOfFinishSearching.Enabled = true;
-            periodicCheckerOfFinishSearching.Elapsed += delegate
+            if (carts.Count == 0)
             {
-                if (needCheckCount == 0)
-                {
-                    if (carts.Count == 0)
-                    {
-                        mainWindow.showMessage(MessageTypeEnum.error, "V síti nebylo nalezeno žádné kompatibilní zařízení.");
-                    }
-                    else {
-                        mainWindow.showMessage(MessageTypeEnum.success, "Bylo nalezeno " + carts.Count + " kompatibilních zařízení.");
-                        networkScannerView.enableNextButton();
-                    }
-                    networkScannerView.setCountLabel(carts.Count);
-                }
-
-                periodicCheckerOfFinishSearching.Dispose();
-            };
+                mainWindow.showMessage(MessageTypeEnum.error, "V síti nebylo nalezeno žádné kompatibilní zařízení.");
+            }
+            else {
+                mainWindow.showMessage(MessageTypeEnum.success, "Bylo nalezeno " + carts.Count + " kompatibilních zařízení.");
+                networkScannerView.enableNextButton();
+            }
+            networkScannerView.setCountLabel(carts.Count);
         }
 
         /// <summary>
@@ -191,7 +200,7 @@ namespace FactorySheduler
             delegate (object o, RunWorkerCompletedEventArgs args)
             {
                 mainWindow.showMessage(MessageTypeEnum.success, "Párování bylo dokončeno.");
-                mapView.refreshAll();
+                mapView.startPeriodicRefresh();
             });
 
             bw.RunWorkerAsync();

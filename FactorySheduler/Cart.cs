@@ -8,15 +8,14 @@ using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using System.Timers;
+using System.Windows.Forms;
 
 namespace FactorySheduler
 {
     public class Cart
     {
-        //System.ComponentModel.
-        //[Browsable(false)]
         private RestClient client; //client pro odesílání REST dotazů na Arduino
-        private Timer periodicCheckerPosition; //periodický kontroler polohy vozíku
+        private System.Timers.Timer periodicCheckerPosition; //periodický kontroler polohy vozíku
         private const int positionPeriodLength = 1000; //délka periody v milisekundách - jak často se bude aktualizovat poloha vozíku
         private Dashboard dashboard; //Objekt představující připojení k Dashboard aplikaci
         [DisplayName("Název")]
@@ -39,7 +38,9 @@ namespace FactorySheduler
         [DisplayName("Adresa majáku")]
         [Description("Adresa ultrazvukového majáku, který je umístěn na tomto vozíku.")]
         public int beaconAddress { get; set; } //adresa ultrazvukového majáku umístěného na vozíku
-        
+        [Browsable(false)]
+        public RadioButton asociatedButton { get; set; } //tlačítko ve view přiřazené k tomuto vozíku 
+
         public Cart(string ip, Dashboard dashboard) {
             this.ip = ip;
             this.name = ip;
@@ -80,13 +81,12 @@ namespace FactorySheduler
         /// Započne periodické kontrolování pozice robota
         /// </summary>
         public void startPeriodicScanOfPosition() {
-            periodicCheckerPosition = new Timer();
+            periodicCheckerPosition = new System.Timers.Timer();
             periodicCheckerPosition.Interval = positionPeriodLength;
             periodicCheckerPosition.Enabled = true;
             periodicCheckerPosition.Elapsed += delegate
             {
                 scanPosition();
-                //TODO dodělat aktivní hlášení chyb do view
             };
         }
 
@@ -98,11 +98,13 @@ namespace FactorySheduler
             Point point = dashboard.getDevicePosition(beaconAddress);
             if (point.X == 0 && point.Y == 0)
             {
+                isPositionActual = false;
                 errorMessage = "Nastala chyba při dotazování pozice majáku na aplikaci Dashboard";
                 return false;
             }
             else
             {
+                isPositionActual = true;
                 errorMessage = "";
                 position = point;
                 return true;
@@ -122,11 +124,13 @@ namespace FactorySheduler
                 string content = response.Content.Trim();
                 if (content == "NO_HEDGEHOG_CONNECTION_OR_NO_POSITION_UPDATE")
                 {
+                    isPositionActual = false;
                     errorMessage = "Chyba spojení mobilního majáku s Arduino nebo pouze není měřena pozice. Případně zkuste restartovat maják (alespoň 5 sekund podržet restart).";
                     return new Point(0, 0);
                 }
                 else if (content == "NO_RESPONSE_FROM_LINUX")
                 {
+                    isPositionActual = false;
                     errorMessage = "Arduino kontrolér nedostává žádná data o poloze z python scriptu běžícím na Linuxového systému. Zkuste restartovat Arduino.";
                     return new Point(0, 0);
                 }
@@ -135,10 +139,12 @@ namespace FactorySheduler
                     string[] positions = content.Split(',');
                     if (positions.Length == 2)
                     {
+                        isPositionActual = true;
                         errorMessage = "";
                         return new Point(Int32.Parse(positions[0]), Int32.Parse(positions[1]));
                     }
                     else {
+                        isPositionActual = false;
                         errorMessage = "Špatný formát příchozí zprávy o poloze z Arduino.";
                         return new Point(0, 0);
                     }

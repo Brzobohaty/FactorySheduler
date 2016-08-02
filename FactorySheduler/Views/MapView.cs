@@ -15,6 +15,8 @@ namespace FactorySheduler.Views
     /// </summary>
     public partial class MapView : UserControl
     {
+        private List<Cart> carts; //vozíky
+
         public MapView()
         {
             InitializeComponent();
@@ -26,9 +28,9 @@ namespace FactorySheduler.Views
         /// <param name="carts"></param>
         public void addCarts(List<Cart> carts)
         {
+            this.carts = carts;
             for (int j = 0; j < carts.Count(); j++)
             {
-                //CartProperties cart = new CartProperties(carts[j]);
                 Cart cart = carts[j];
                 RadioButton button = new RadioButton();
                 button.Appearance = Appearance.Button;
@@ -42,15 +44,39 @@ namespace FactorySheduler.Views
                 {
                     button.Checked = true;
                     showProperties(cart);
+                    cart.asociatedButton = button;
                 }
             }
         }
 
         /// <summary>
-        /// Proskenuje všechny změny a náležitě je zobrazí
+        /// Započne periodické obnovování všech potřebných komponent
         /// </summary>
-        public void refreshAll() {
-            propertyGrid.Refresh();
+        public void startPeriodicRefresh()
+        {
+            timerRefresh.Enabled = true;
+        }
+
+        /// <summary>
+        /// Všechno co se má v čase aktualzovat bude aktualizováno
+        /// </summary>
+        private void refreshAll() {
+            if (!propertyGrid.ContainsFocus) {
+                propertyGrid.Refresh();
+            }
+            for (int j = 0; j < carts.Count(); j++)
+            {
+                Cart cart = carts[j];
+                cart.asociatedButton.Text = cart.name;
+                if (cart.errorMessage == "")
+                {
+                    cart.asociatedButton.BackColor = Color.Green;
+                }
+                else {
+                    cart.asociatedButton.BackColor = Color.Red;
+                }
+            }
+            
         }
 
         /// <summary>
@@ -73,6 +99,14 @@ namespace FactorySheduler.Views
                 Cart cart = (Cart)button.Tag;
                 showProperties(cart);
             }
+        }
+
+        /// <summary>
+        /// Jeden cyklus timeru
+        /// </summary>
+        private void timerRefresh_Tick(object sender, EventArgs e)
+        {
+            refreshAll();
         }
     }
 }

@@ -85,6 +85,7 @@
             // buttonNext
             // 
             this.buttonNext.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.buttonNext.Enabled = false;
             this.buttonNext.Location = new System.Drawing.Point(766, 641);
             this.buttonNext.Name = "buttonNext";
             this.buttonNext.Size = new System.Drawing.Size(117, 28);
