@@ -34,6 +34,7 @@
             this.labelDvicesIPs = new System.Windows.Forms.Label();
             this.labelCount = new System.Windows.Forms.Label();
             this.buttonNext = new System.Windows.Forms.Button();
+            this.buttonRefresh = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // label1
@@ -94,10 +95,23 @@
             this.buttonNext.UseVisualStyleBackColor = true;
             this.buttonNext.Click += new System.EventHandler(this.buttonNext_Click);
             // 
+            // buttonRefresh
+            // 
+            this.buttonRefresh.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.buttonRefresh.AutoSize = true;
+            this.buttonRefresh.Location = new System.Drawing.Point(764, 45);
+            this.buttonRefresh.Name = "buttonRefresh";
+            this.buttonRefresh.Size = new System.Drawing.Size(119, 27);
+            this.buttonRefresh.TabIndex = 5;
+            this.buttonRefresh.Text = "Znovu skenovat";
+            this.buttonRefresh.UseVisualStyleBackColor = true;
+            this.buttonRefresh.Click += new System.EventHandler(this.buttonRefresh_Click);
+            // 
             // NetworkScanView
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.Controls.Add(this.buttonRefresh);
             this.Controls.Add(this.buttonNext);
             this.Controls.Add(this.labelCount);
             this.Controls.Add(this.labelDvicesIPs);
@@ -119,5 +133,6 @@
         private System.Windows.Forms.Label labelDvicesIPs;
         private System.Windows.Forms.Label labelCount;
         private System.Windows.Forms.Button buttonNext;
+        private System.Windows.Forms.Button buttonRefresh;
     }
 }

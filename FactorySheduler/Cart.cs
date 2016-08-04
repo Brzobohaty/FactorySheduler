@@ -40,8 +40,11 @@ namespace FactorySheduler
         public int beaconAddress { get; set; } //adresa ultrazvukového majáku umístěného na vozíku
         [Browsable(false)]
         public RadioButton asociatedButton { get; set; } //tlačítko ve view přiřazené k tomuto vozíku 
+        [Browsable(false)]
+        private Action dashboarConnectionFaildCallback; //callback pro případ, že selže připojení k aplikaci dashboard
 
-        public Cart(string ip, Dashboard dashboard) {
+        public Cart(string ip, Dashboard dashboard, Action dashboarConnectionFaildCallback) {
+            this.dashboarConnectionFaildCallback = dashboarConnectionFaildCallback;
             this.ip = ip;
             this.name = ip;
             this.dashboard = dashboard;
@@ -100,6 +103,7 @@ namespace FactorySheduler
             {
                 isPositionActual = false;
                 errorMessage = "Nastala chyba při dotazování pozice majáku na aplikaci Dashboard";
+                dashboarConnectionFaildCallback();
                 return false;
             }
             else

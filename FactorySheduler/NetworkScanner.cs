@@ -16,7 +16,7 @@ namespace FactorySheduler
     {
         public string thisDeviceIP { get; private set; } // IP tohoto zařízení
         private Action<string> iPFoundObserver; //callback pro nalezení zařízení
-        private int countOfDoneTestedAdresses = 0; //Počet již otestovaných adres
+        private int countOfDoneTestedAdresses; //Počet již otestovaných adres
         private Action finishCallback; //callback, že byly proskenovány všechny adresy
 
         public NetworkScanner()
@@ -63,6 +63,7 @@ namespace FactorySheduler
         /// </summary>
         /// <param name="ip">IP zařízení, z kterého je tato aplikace spuštěna</param>
         public void scanNetwork(string ip, Action finishCallback) {
+            countOfDoneTestedAdresses = 0;
             this.finishCallback = finishCallback;
             string ipPrefix = thisDeviceIP.Substring(0, thisDeviceIP.LastIndexOf(".")+1);
 

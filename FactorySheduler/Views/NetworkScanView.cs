@@ -15,6 +15,7 @@ namespace FactorySheduler.Views
         private static NetworkScanView instance = new NetworkScanView(); //instance této třídy
         private Dictionary<String, ListViewItem> ipItems = new Dictionary<String, ListViewItem>(); //slovník všech nalezených zařízení v seznamu podle jejich IP
         private Action buttonNextClickCallback;
+        private Action buttonRefreshClickCallback;
 
         private NetworkScanView()
         {
@@ -33,6 +34,15 @@ namespace FactorySheduler.Views
         public void subscribeButtonNextListener(Action callback)
         {
             this.buttonNextClickCallback = callback;
+        }
+
+        /// <summary>
+        /// Zapsání posluchače pro stisknutí tlačítka pro refresh
+        /// </summary>
+        /// <param name="callback"></param>
+        public void subscribeButtonRefreshListener(Action callback)
+        {
+            this.buttonRefreshClickCallback = callback;
         }
 
         /// <summary>
@@ -111,6 +121,14 @@ namespace FactorySheduler.Views
         private void buttonNext_Click(object sender, EventArgs e)
         {
             buttonNextClickCallback();
+        }
+
+        private void buttonRefresh_Click(object sender, EventArgs e)
+        {
+            labelCount.Text = "";
+            ipItems = new Dictionary<String, ListViewItem>();
+            listView1.Clear();
+            buttonRefreshClickCallback();
         }
     }
 }

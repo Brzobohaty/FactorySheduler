@@ -101,8 +101,10 @@ namespace FactorySheduler
                 // Blocks until a message returns on this socket from a remote host.
                 Byte[] receiveBytes = udpClient.Receive(ref dashboardEndPoint);
 
+                //int timestamp = BitConverter.ToInt32(receiveBytes, 5);
                 int xPosition = BitConverter.ToInt16(receiveBytes, 9);
                 int yPosition = BitConverter.ToInt16(receiveBytes, 11);
+                //int zPosition = BitConverter.ToInt16(receiveBytes, 13);
 
                 udpClient.Close();
 

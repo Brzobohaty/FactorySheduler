@@ -18,6 +18,7 @@ namespace FactorySheduler
         private int needCheckCount = 0; //Příznak, kolik zařízení v síti ještě potřebuje zkontrolovat
         private Dashboard dashboard = new Dashboard(); //Objekt představující připojení k Dashboard aplikaci
         private MapView mapView; //View pro zobrazení mapy zařízení 
+        private System.Windows.Forms.Timer periodicCheckerOfDashboardConnection = new System.Windows.Forms.Timer(); //periodický kontroler připojení k aplikaci dashboard (v případě selhání připojení)
 
         /// <param name="mainWindow">hlavní okno aplikace</param>
         public Controller(MainWindow mainWindow)
@@ -35,15 +36,24 @@ namespace FactorySheduler
             networkScanner = new NetworkScanner();
             networkScanner.subscribeIPFoundObserver(createCart);
             networkScannerView.subscribeButtonNextListener(nextStepAfterNetworkScan);
+            networkScannerView.subscribeButtonRefreshListener(scanNetwork);
             if (networkScanner.thisDeviceIP != "")
             {
-                mainWindow.showMessage(MessageTypeEnum.progress, "Hledám a rozeznávám zařízení v síti ...");
                 networkScannerView.showThisDeviceIP(networkScanner.thisDeviceIP);
-                networkScanner.scanNetwork(networkScanner.thisDeviceIP, finishIPSearching);
+                scanNetwork();
             }
             else {
                 mainWindow.showMessage(MessageTypeEnum.error, "Není připojena žádná vyhovující WiFi síť.");
             }
+        }
+
+        /// <summary>
+        /// Proskenuje Wifi síť a najde vyhovující zařízení
+        /// </summary>
+        private void scanNetwork() {
+            carts.Clear();
+            mainWindow.showMessage(MessageTypeEnum.progress, "Hledám a rozeznávám zařízení v síti ...");
+            networkScanner.scanNetwork(networkScanner.thisDeviceIP, finishIPSearching);
         }
 
         /// <summary>
@@ -52,7 +62,7 @@ namespace FactorySheduler
         /// <param name="ip">IP arduino zařízení na vozíku</param>
         private void createCart(string ip)
         {
-            Cart cart = new Cart(ip, dashboard);
+            Cart cart = new Cart(ip, dashboard, startPeriodicScanOfDashboardConnection);
             carts.Add(ip, cart);
             networkScannerView.addDeviceIP(ip);
             needCheckCount++;
@@ -88,7 +98,7 @@ namespace FactorySheduler
                     needCheckCount--;
                     if (needCheckCount == 0)
                     {
-                        createPeriodicCheckerOfFinishSearching();
+                        finishNetworkSearching();
                     }
                 });
 
@@ -99,7 +109,7 @@ namespace FactorySheduler
         /// <summary>
         /// Dokončení skenování sítě
         /// </summary>
-        private void createPeriodicCheckerOfFinishSearching()
+        private void finishNetworkSearching()
         {
             if (carts.Count == 0)
             {
@@ -119,17 +129,46 @@ namespace FactorySheduler
         {
             mapView = new MapView();
             mainWindow.setView(mapView);
-
             mapView.addCarts(carts.Values.ToList());
+            if (!connectToDashBoard()) {
+                startPeriodicScanOfDashboardConnection();
+            }
+        }
 
+        /// <summary>
+        /// Započne periodické kontrolování připojení k aplikaci dashboard
+        /// </summary>
+        public void startPeriodicScanOfDashboardConnection()
+        {
+            if (periodicCheckerOfDashboardConnection.Enabled) {
+                return;
+            }
+            periodicCheckerOfDashboardConnection = new System.Windows.Forms.Timer();
+            periodicCheckerOfDashboardConnection.Interval = 3000;
+            periodicCheckerOfDashboardConnection.Enabled = true;
+            periodicCheckerOfDashboardConnection.Tick += delegate
+            {
+                if (connectToDashBoard())
+                {
+                    periodicCheckerOfDashboardConnection.Dispose();
+                }
+            };
+        }
+
+        /// <summary>
+        /// Připojení k aplikaci dashboard
+        /// </summary>
+        private bool connectToDashBoard() {
             mainWindow.showMessage(MessageTypeEnum.progress, "Připojování k aplikaci dashboard ...");
             if (dashboard.checkConnectionToDashboard())
             {
                 mainWindow.showMessage(MessageTypeEnum.progress, "Párování Arduino zařízení s ultrazvukovými majáky ...");
                 pairArduinosWithBeacons();
+                return true;
             }
             else {
                 mainWindow.showMessage(MessageTypeEnum.error, "Připojování k aplikaci dashboard se nezdařilo. Zapněte aplikaci Dashboard a nastavte jí UDP port 4444.");
+                return false;
             }
         }
 
@@ -148,7 +187,7 @@ namespace FactorySheduler
                 //TODO spustit ve vlákně
                 List<Cart> cartsList = carts.Values.ToList();
                 int maxBeaconAdress = 20;
-                for (int address = 0; address <= maxBeaconAdress; address++)
+                for (int address = 1; address <= maxBeaconAdress; address++)
                 {
                     if (dashboard.isDeviceConnected(address))
                     {

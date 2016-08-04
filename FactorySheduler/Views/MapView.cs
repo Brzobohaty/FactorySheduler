@@ -16,9 +16,11 @@ namespace FactorySheduler.Views
     public partial class MapView : UserControl
     {
         private List<Cart> carts; //vozíky
+        private Action buttonSearchNextDevicesCallback; //callback při kliknutí na tlačítko hledat další zařízení
 
-        public MapView()
+        public MapView(Action buttonSearchNextDevicesCallback)
         {
+            this.buttonSearchNextDevicesCallback = buttonSearchNextDevicesCallback;
             InitializeComponent();
         }
 
@@ -107,6 +109,11 @@ namespace FactorySheduler.Views
         private void timerRefresh_Tick(object sender, EventArgs e)
         {
             refreshAll();
+        }
+
+        private void buttonSearchNextDevices_Click(object sender, EventArgs e)
+        {
+            buttonSearchNextDevicesCallback();
         }
     }
 }
