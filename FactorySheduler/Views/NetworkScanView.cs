@@ -62,7 +62,7 @@ namespace FactorySheduler.Views
         public void showThisDeviceIP(string ip) {
             labelThisDeviceIP.Text = ip;
             string ipPrefix = ip.Substring(0, ip.LastIndexOf(".") + 1);
-            labelDvicesIPs.Text = labelDvicesIPs.Text+ipPrefix+"*";
+            labelDvicesIPs.Text = "IP nalezených zařízení v síti s prefixem " + ipPrefix+"*";
         }
 
         /// <summary>

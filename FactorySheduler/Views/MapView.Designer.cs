@@ -30,21 +30,22 @@
         {
             this.components = new System.ComponentModel.Container();
             this.labelDvicesIPs = new System.Windows.Forms.Label();
-            this.listView1 = new System.Windows.Forms.ListView();
             this.panel1 = new System.Windows.Forms.Panel();
+            this.flowLayoutPanel1 = new System.Windows.Forms.FlowLayoutPanel();
+            this.button1 = new System.Windows.Forms.Button();
             this.propertyGrid = new System.Windows.Forms.PropertyGrid();
             this.buttonsLayout = new System.Windows.Forms.FlowLayoutPanel();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.timerRefresh = new System.Windows.Forms.Timer(this.components);
-            this.flowLayoutPanel1 = new System.Windows.Forms.FlowLayoutPanel();
-            this.button1 = new System.Windows.Forms.Button();
             this.buttonSearchNextDevices = new System.Windows.Forms.Button();
+            this.mapBox = new System.Windows.Forms.PictureBox();
             this.panel1.SuspendLayout();
+            this.flowLayoutPanel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
             this.splitContainer1.SuspendLayout();
-            this.flowLayoutPanel1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.mapBox)).BeginInit();
             this.SuspendLayout();
             // 
             // labelDvicesIPs
@@ -54,16 +55,6 @@
             this.labelDvicesIPs.Size = new System.Drawing.Size(506, 20);
             this.labelDvicesIPs.TabIndex = 5;
             this.labelDvicesIPs.Text = "Mapa nalezených zařízení";
-            // 
-            // listView1
-            // 
-            this.listView1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.listView1.Location = new System.Drawing.Point(0, 0);
-            this.listView1.Name = "listView1";
-            this.listView1.Size = new System.Drawing.Size(664, 547);
-            this.listView1.TabIndex = 8;
-            this.listView1.UseCompatibleStateImageBehavior = false;
-            this.listView1.View = System.Windows.Forms.View.List;
             // 
             // panel1
             // 
@@ -75,6 +66,24 @@
             this.panel1.Name = "panel1";
             this.panel1.Size = new System.Drawing.Size(220, 547);
             this.panel1.TabIndex = 9;
+            // 
+            // flowLayoutPanel1
+            // 
+            this.flowLayoutPanel1.Controls.Add(this.button1);
+            this.flowLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.flowLayoutPanel1.Location = new System.Drawing.Point(0, 413);
+            this.flowLayoutPanel1.Name = "flowLayoutPanel1";
+            this.flowLayoutPanel1.Size = new System.Drawing.Size(220, 134);
+            this.flowLayoutPanel1.TabIndex = 1;
+            // 
+            // button1
+            // 
+            this.button1.Location = new System.Drawing.Point(3, 3);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(75, 23);
+            this.button1.TabIndex = 0;
+            this.button1.Text = "button1";
+            this.button1.UseVisualStyleBackColor = true;
             // 
             // propertyGrid
             // 
@@ -107,7 +116,8 @@
             // 
             // splitContainer1.Panel1
             // 
-            this.splitContainer1.Panel1.Controls.Add(this.listView1);
+            this.splitContainer1.Panel1.BackColor = System.Drawing.SystemColors.ActiveCaption;
+            this.splitContainer1.Panel1.Controls.Add(this.mapBox);
             // 
             // splitContainer1.Panel2
             // 
@@ -121,24 +131,6 @@
             this.timerRefresh.Interval = 300;
             this.timerRefresh.Tick += new System.EventHandler(this.timerRefresh_Tick);
             // 
-            // flowLayoutPanel1
-            // 
-            this.flowLayoutPanel1.Controls.Add(this.button1);
-            this.flowLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.flowLayoutPanel1.Location = new System.Drawing.Point(0, 413);
-            this.flowLayoutPanel1.Name = "flowLayoutPanel1";
-            this.flowLayoutPanel1.Size = new System.Drawing.Size(220, 134);
-            this.flowLayoutPanel1.TabIndex = 1;
-            // 
-            // button1
-            // 
-            this.button1.Location = new System.Drawing.Point(3, 3);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(75, 23);
-            this.button1.TabIndex = 0;
-            this.button1.Text = "button1";
-            this.button1.UseVisualStyleBackColor = true;
-            // 
             // buttonSearchNextDevices
             // 
             this.buttonSearchNextDevices.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
@@ -151,6 +143,15 @@
             this.buttonSearchNextDevices.UseVisualStyleBackColor = true;
             this.buttonSearchNextDevices.Click += new System.EventHandler(this.buttonSearchNextDevices_Click);
             // 
+            // mapBox
+            // 
+            this.mapBox.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.mapBox.Location = new System.Drawing.Point(0, 0);
+            this.mapBox.Name = "mapBox";
+            this.mapBox.Size = new System.Drawing.Size(664, 547);
+            this.mapBox.TabIndex = 0;
+            this.mapBox.TabStop = false;
+            // 
             // MapView
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
@@ -162,11 +163,12 @@
             this.Name = "MapView";
             this.Size = new System.Drawing.Size(920, 724);
             this.panel1.ResumeLayout(false);
+            this.flowLayoutPanel1.ResumeLayout(false);
             this.splitContainer1.Panel1.ResumeLayout(false);
             this.splitContainer1.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).EndInit();
             this.splitContainer1.ResumeLayout(false);
-            this.flowLayoutPanel1.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.mapBox)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -174,7 +176,6 @@
 
         #endregion
         private System.Windows.Forms.Label labelDvicesIPs;
-        private System.Windows.Forms.ListView listView1;
         private System.Windows.Forms.Panel panel1;
         private System.Windows.Forms.PropertyGrid propertyGrid;
         private System.Windows.Forms.FlowLayoutPanel buttonsLayout;
@@ -183,5 +184,6 @@
         private System.Windows.Forms.FlowLayoutPanel flowLayoutPanel1;
         private System.Windows.Forms.Button button1;
         private System.Windows.Forms.Button buttonSearchNextDevices;
+        private System.Windows.Forms.PictureBox mapBox;
     }
 }

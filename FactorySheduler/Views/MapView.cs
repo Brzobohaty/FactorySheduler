@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Drawing.Drawing2D;
 
 namespace FactorySheduler.Views
 {
@@ -46,9 +47,10 @@ namespace FactorySheduler.Views
                 {
                     button.Checked = true;
                     showProperties(cart);
-                    cart.asociatedButton = button;
                 }
+                cart.asociatedButton = button;
             }
+            paintCarts();
         }
 
         /// <summary>
@@ -57,6 +59,14 @@ namespace FactorySheduler.Views
         public void startPeriodicRefresh()
         {
             timerRefresh.Enabled = true;
+        }
+
+        /// <summary>
+        /// Zapnutí/vypnutí tlačítka pro hledání dalších zařízení
+        /// </summary>
+        /// <param name="enabled">true pokud zapnout</param>
+        public void setEnableRefreshButton(bool enabled) {
+            buttonSearchNextDevices.Enabled = enabled;
         }
 
         /// <summary>
@@ -78,7 +88,7 @@ namespace FactorySheduler.Views
                     cart.asociatedButton.BackColor = Color.Red;
                 }
             }
-            
+            mapBox.Refresh();
         }
 
         /// <summary>
@@ -114,6 +124,45 @@ namespace FactorySheduler.Views
         private void buttonSearchNextDevices_Click(object sender, EventArgs e)
         {
             buttonSearchNextDevicesCallback();
+        }
+
+        /// <summary>
+        /// Nastavení vykreslování všech vozíků na mapě
+        /// </summary>
+        private void paintCarts()
+        {
+            for (int i = 0; i < carts.Count(); i++)
+            {
+                Cart cart = carts[i];
+                mapBox.Paint += new PaintEventHandler(
+                    delegate (object sender, PaintEventArgs e)
+                    {
+                        var g = e.Graphics;
+                        g.SmoothingMode = SmoothingMode.AntiAlias;
+                        paintCart(g, cart);
+                    }
+                );
+            }
+        }
+
+        /// <summary>
+        /// Vykreslení vozíku
+        /// </summary>
+        /// <param name="g">grafika mapy</param>
+        /// <param name="cart">vozík</param>
+        private void paintCart(Graphics g, Cart cart)
+        {
+            //vykreslení základny vozíku
+            Pen pen = new Pen(Color.Black, cart.distanceFromHedghogToLeftSideOfCart+cart.distanceFromHedghogToRightSideOfCart);
+            MathLibrary.Point firstPoint = MathLibrary.getPointOnLine(cart.position.X, cart.position.Y, cart.angle - 180, cart.longg/2);
+            MathLibrary.Point secondPoint = MathLibrary.getPointOnLine(cart.position.X, cart.position.Y, cart.angle, cart.longg/2);
+            g.DrawLine(pen, (float)firstPoint.X, (float)firstPoint.Y, (float)secondPoint.X, (float)secondPoint.Y);
+
+            //vzkreslení názvu
+            Font drawFont = new Font("Arial", 10);
+            SolidBrush drawBrush = new SolidBrush(Color.White);
+            SizeF stringSize = g.MeasureString(cart.alias, drawFont);
+            g.DrawString(cart.alias, drawFont, drawBrush, cart.position.X-(stringSize.Width/2), cart.position.Y - (stringSize.Height / 2), new StringFormat());
         }
     }
 }

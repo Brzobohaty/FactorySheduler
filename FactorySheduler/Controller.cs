@@ -19,6 +19,7 @@ namespace FactorySheduler
         private Dashboard dashboard = new Dashboard(); //Objekt představující připojení k Dashboard aplikaci
         private MapView mapView; //View pro zobrazení mapy zařízení 
         private System.Windows.Forms.Timer periodicCheckerOfDashboardConnection = new System.Windows.Forms.Timer(); //periodický kontroler připojení k aplikaci dashboard (v případě selhání připojení)
+        private const bool test = true; //proměnná, která indikuje, že se má v případě selhání připojit simulační wifi síť se simulačními vozíky
 
         /// <param name="mainWindow">hlavní okno aplikace</param>
         public Controller(MainWindow mainWindow)
@@ -37,14 +38,7 @@ namespace FactorySheduler
             networkScanner.subscribeIPFoundObserver(createCart);
             networkScannerView.subscribeButtonNextListener(nextStepAfterNetworkScan);
             networkScannerView.subscribeButtonRefreshListener(scanNetwork);
-            if (networkScanner.thisDeviceIP != "")
-            {
-                networkScannerView.showThisDeviceIP(networkScanner.thisDeviceIP);
-                scanNetwork();
-            }
-            else {
-                mainWindow.showMessage(MessageTypeEnum.error, "Není připojena žádná vyhovující WiFi síť.");
-            }
+            scanNetwork();
         }
 
         /// <summary>
@@ -52,8 +46,35 @@ namespace FactorySheduler
         /// </summary>
         private void scanNetwork() {
             carts.Clear();
-            mainWindow.showMessage(MessageTypeEnum.progress, "Hledám a rozeznávám zařízení v síti ...");
-            networkScanner.scanNetwork(networkScanner.thisDeviceIP, finishIPSearching);
+            if (networkScanner.getThisDeviceIp() != "")
+            {
+                networkScannerView.showThisDeviceIP(networkScanner.thisDeviceIP);
+                mainWindow.showMessage(MessageTypeEnum.progress, "Hledám a rozeznávám zařízení v síti ...");
+                networkScanner.scanNetwork(networkScanner.thisDeviceIP, finishIPSearching);
+            }
+            else {
+                if (test) {
+                    addTestCarts(5);
+                    nextStepAfterNetworkScan();
+                    mapView.startPeriodicRefresh();
+                }
+                mainWindow.showMessage(MessageTypeEnum.error, "Není připojena žádná vyhovující WiFi síť.");
+            }
+        }
+
+        /// <summary>
+        /// Přidá další testovací simulace vozíků pro testování
+        /// </summary>
+        /// <param name="count">počet přidaných vozíků</param>
+        private void addTestCarts(int count) {
+            for (int i = 0; i < count; i++)
+            {
+                string ip = "192.254.48."+i;
+                TestCart cart = new TestCart(ip, dashboard, startPeriodicScanOfDashboardConnection);
+                carts.Add(ip, cart);
+                cart.beaconAddress = i+50;
+                cart.startPeriodicScanOfPosition();
+            }
         }
 
         /// <summary>
@@ -127,7 +148,8 @@ namespace FactorySheduler
         /// </summary>
         private void nextStepAfterNetworkScan()
         {
-            mapView = new MapView();
+            //TODO doplnit callback
+            mapView = new MapView(null);
             mainWindow.setView(mapView);
             mapView.addCarts(carts.Values.ToList());
             if (!connectToDashBoard()) {
@@ -162,11 +184,13 @@ namespace FactorySheduler
             mainWindow.showMessage(MessageTypeEnum.progress, "Připojování k aplikaci dashboard ...");
             if (dashboard.checkConnectionToDashboard())
             {
+                mapView.setEnableRefreshButton(true);
                 mainWindow.showMessage(MessageTypeEnum.progress, "Párování Arduino zařízení s ultrazvukovými majáky ...");
                 pairArduinosWithBeacons();
                 return true;
             }
             else {
+                mapView.setEnableRefreshButton(false);
                 mainWindow.showMessage(MessageTypeEnum.error, "Připojování k aplikaci dashboard se nezdařilo. Zapněte aplikaci Dashboard a nastavte jí UDP port 4444.");
                 return false;
             }

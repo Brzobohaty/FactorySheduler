@@ -14,26 +14,29 @@ namespace FactorySheduler
 {
     public class Cart
     {
-        private RestClient client; //client pro odesílání REST dotazů na Arduino
-        private System.Timers.Timer periodicCheckerPosition; //periodický kontroler polohy vozíku
-        private const int positionPeriodLength = 1000; //délka periody v milisekundách - jak často se bude aktualizovat poloha vozíku
-        private Dashboard dashboard; //Objekt představující připojení k Dashboard aplikaci
+        protected RestClient client; //client pro odesílání REST dotazů na Arduino
+        protected System.Timers.Timer periodicCheckerPosition; //periodický kontroler polohy vozíku
+        protected const int positionPeriodLength = 1000; //délka periody v milisekundách - jak často se bude aktualizovat poloha vozíku
+        protected Dashboard dashboard; //Objekt představující připojení k Dashboard aplikaci
         [DisplayName("Název")]
         [Description("Název zařízení pouze pro identifikaci v této aplikaci.")]
         public string name { get; set; } //název vozíku
+        [DisplayName("Značka")]
+        [Description("Krátká značka pro jednoznačnou identifikaci vozíku na mapě.")]
+        public string alias { get; set; } //zkrácený název pro vozík
         [DisplayName("IP adresa")]
         [Description("IP adresa Arduino zařízení na vozíku.")]
-        public string ip { get; private set; } //ip adresa Arduino zařízení
+        public string ip { get; protected set; } //ip adresa Arduino zařízení
         [ReadOnly(true)]
         [DisplayName("Chybová hláška")]
         [Description("V případě, že nastala nějaká chyba, proměnná obsahuje chybovou hlášku.")]
         public string errorMessage { get; set; } //pokud nastala nějaká chyba, bude tato proměnná obsahovat chybovou hlášku, jinak ""
         [DisplayName("Pozice")]
         [Description("Poslední známá pozice majáku.")]
-        public Point position { get; private set; } //poslední známá pozice
+        public Point position { get; protected set; } //poslední známá pozice
         [DisplayName("Aktuální pozice")]
         [Description("Příznak, zda je pozice aktuální nebo zda se jedná pouze o poslední známou pozici.")]
-        public bool isPositionActual { get; private set; } //příznak, zda je pozice aktuální
+        public bool isPositionActual { get; protected set; } //příznak, zda je pozice aktuální
         [ReadOnly(true)]
         [DisplayName("Adresa majáku")]
         [Description("Adresa ultrazvukového majáku, který je umístěn na tomto vozíku.")]
@@ -41,12 +44,34 @@ namespace FactorySheduler
         [Browsable(false)]
         public RadioButton asociatedButton { get; set; } //tlačítko ve view přiřazené k tomuto vozíku 
         [Browsable(false)]
-        private Action dashboarConnectionFaildCallback; //callback pro případ, že selže připojení k aplikaci dashboard
+        protected Action dashboarConnectionFaildCallback; //callback pro případ, že selže připojení k aplikaci dashboard
+        [DisplayName("Zadní vzdálenost majáku")]
+        [Description("Vzdálenost umístění majáku od zadní části vozíku [cm]")]
+        public int distanceFromHedghogToBackOfCart { get; set; } = 10;//vzdálenost umístění majáku od zadní části vozíku [cm]
+        [DisplayName("Přední vzdálenost majáku")]
+        [Description("Vzdálenost umístění majáku od přední části vozíku [cm]")]
+        public int distanceFromHedghogToFrontOfCart { get; set; } = 10;//vzdálenost umístění majáku od přední části vozíku [cm]
+        [DisplayName("Levá vzdálenost majáku")]
+        [Description("Vzdálenost umístění majáku od levé části vozíku [cm]")]
+        public int distanceFromHedghogToLeftSideOfCart { get; set; } = 10;//vzdálenost umístění majáku od levé části vozíku [cm]
+        [DisplayName("Pravá vzdálenost majáku")]
+        [Description("Vzdálenost umístění majáku od pravé části vozíku [cm]")]
+        public int distanceFromHedghogToRightSideOfCart { get; set; } = 10; //vzdálenost umístění majáku od právé části vozíku [cm]
+        [DisplayName("Šířka vozíku")]
+        [Description("Šířka vozíku [cm]")]
+        public double width { get; protected set; } //šířka vozíku
+        [DisplayName("Délka vozíku")]
+        [Description("Délka vozíku [cm]")]
+        public double longg { get; protected set; } //délka vozíku
 
-        public Cart(string ip, Dashboard dashboard, Action dashboarConnectionFaildCallback) {
+    public int angle { get; set; } = 45;
+
+        public Cart(string ip, Dashboard dashboard, Action dashboarConnectionFaildCallback)
+        {
             this.dashboarConnectionFaildCallback = dashboarConnectionFaildCallback;
             this.ip = ip;
-            this.name = ip;
+            name = ip;
+            alias = ip.Substring(ip.Length - 3);
             this.dashboard = dashboard;
             client = new RestClient("http://" + ip + "/");
             errorMessage = "";
@@ -56,7 +81,8 @@ namespace FactorySheduler
         /// Zkontroluje, zda se opravdu jedná o arduino a zda se na něj lze připojit a že je nastavené REST API
         /// </summary>
         /// <returns>true, pokud je vše v pořádku</returns>
-        public bool checkConnectionToArduino() {
+        public virtual bool checkConnectionToArduino()
+        {
             RestRequest request = new RestRequest("arduino/check/", Method.GET);
 
             //RestRequest request = new RestRequest("arduino/{order}/", Method.GET);
@@ -83,13 +109,16 @@ namespace FactorySheduler
         /// <summary>
         /// Započne periodické kontrolování pozice robota
         /// </summary>
-        public void startPeriodicScanOfPosition() {
+        public virtual void startPeriodicScanOfPosition()
+        {
             periodicCheckerPosition = new System.Timers.Timer();
             periodicCheckerPosition.Interval = positionPeriodLength;
             periodicCheckerPosition.Enabled = true;
             periodicCheckerPosition.Elapsed += delegate
             {
                 scanPosition();
+                longg = distanceFromHedghogToBackOfCart + distanceFromHedghogToFrontOfCart;
+                width = distanceFromHedghogToLeftSideOfCart + distanceFromHedghogToRightSideOfCart;
             };
         }
 
@@ -97,7 +126,8 @@ namespace FactorySheduler
         /// Aktualizuje pozici vozíku
         /// </summary>
         /// <returns>true pokud se podařilo úspěšně načíst novou pozici</returns>
-        public bool scanPosition() {
+        public virtual bool scanPosition()
+        {
             Point point = dashboard.getDevicePosition(beaconAddress);
             if (point.X == 0 && point.Y == 0)
             {
@@ -110,7 +140,7 @@ namespace FactorySheduler
             {
                 isPositionActual = true;
                 errorMessage = "";
-                position = point;
+                position = shiftPosition(point);
                 return true;
             }
         }
@@ -119,7 +149,8 @@ namespace FactorySheduler
         /// Vrátí aktuální pozici vozíku
         /// </summary>
         /// <returns>0,0 pokud nastala chyba</returns>
-        public Point getPositionFromArduino() {
+        public virtual Point getPositionFromArduino()
+        {
             RestRequest request = new RestRequest("arduino/position/", Method.GET);
             IRestResponse response = client.Execute(request);
             HttpStatusCode status = response.StatusCode;
@@ -157,8 +188,85 @@ namespace FactorySheduler
             else {
                 isPositionActual = false;
                 errorMessage = "Nelze se připojit k Arduino zařízení. Zkontrolujte, zda jste na stejné WiFi síti a zda je zařízení zapnuté. Případně ho restartujte.";
-                return new Point(0,0);
+                return new Point(0, 0);
             }
+        }
+
+        /// <summary>
+        /// Posune pozici tak, aby odpovídala prostředku vozíku.
+        /// </summary>
+        /// <returns>pozici uprostřed vozíku</returns>
+        protected Point shiftPosition(Point rawPosition) {
+            //vystředění vůči bokům vozíku
+            double sideShift = (distanceFromHedghogToLeftSideOfCart - distanceFromHedghogToRightSideOfCart) / 2;
+            MathLibrary.Point position = new MathLibrary.Point(rawPosition.X, rawPosition.Y);
+            MathLibrary.Line line = new MathLibrary.Line(position.X, position.Y, angle);
+            MathLibrary.Line normal = line.getNormal(position);
+            MathLibrary.Point[] distanceSitePoints = MathLibrary.getPointOnLineInDistance(normal, position, sideShift);
+            MathLibrary.Point endPoint = MathLibrary.getPointOnLine(rawPosition.X, rawPosition.Y, angle, distanceFromHedghogToFrontOfCart);
+            MathLibrary.Point shiftedSitePosition;
+            MathLibrary.Point pointOnLeft;
+            if (sideShift < 0)
+            {
+                if (MathLibrary.isPointOnTheLeftSideOfVector(position, endPoint, distanceSitePoints[0]))
+                {
+                    pointOnLeft = distanceSitePoints[0];
+                    shiftedSitePosition = distanceSitePoints[1];
+                }
+                else {
+                    pointOnLeft = distanceSitePoints[1];
+                    shiftedSitePosition = distanceSitePoints[0];
+                }
+            }
+            else {
+                if (MathLibrary.isPointOnTheLeftSideOfVector(position, endPoint, distanceSitePoints[0]))
+                {
+                    pointOnLeft = distanceSitePoints[0];
+                    shiftedSitePosition = distanceSitePoints[0];
+                }
+                else {
+                    pointOnLeft = distanceSitePoints[1];
+                    shiftedSitePosition = distanceSitePoints[1];
+                }
+            }
+
+            if (sideShift==0) {
+                MathLibrary.Point[] distancePointsTemp = MathLibrary.getPointOnLineInDistance(normal, position, 20);
+                if (MathLibrary.isPointOnTheLeftSideOfVector(position, endPoint, distancePointsTemp[0]))
+                {
+                    pointOnLeft = distanceSitePoints[0];
+                }
+                else {
+                    pointOnLeft = distanceSitePoints[1];
+                }
+            }
+
+            //vystředění vůči předku a zadku vozíku
+            double frontShift = (distanceFromHedghogToFrontOfCart - distanceFromHedghogToBackOfCart) / 2;
+            MathLibrary.Line parallel = normal.getNormal(shiftedSitePosition);
+            MathLibrary.Point[] distanceFrontPoints = MathLibrary.getPointOnLineInDistance(parallel, shiftedSitePosition, frontShift);
+            MathLibrary.Point shiftedPosition;
+            if (frontShift > 0)
+            {
+                if (MathLibrary.isPointOnTheLeftSideOfVector(position, pointOnLeft, distanceFrontPoints[0]))
+                {
+                    shiftedPosition = distanceFrontPoints[1];
+                }
+                else {
+                    shiftedPosition = distanceFrontPoints[0];
+                }
+            }
+            else {
+                if (MathLibrary.isPointOnTheLeftSideOfVector(position, pointOnLeft, distanceFrontPoints[0]))
+                {
+                    shiftedPosition = distanceFrontPoints[0];
+                }
+                else {
+                    shiftedPosition = distanceFrontPoints[1];
+                }
+            }
+
+            return new Point((int)Math.Round(shiftedPosition.X), (int)Math.Round(shiftedPosition.Y));
         }
     }
 }

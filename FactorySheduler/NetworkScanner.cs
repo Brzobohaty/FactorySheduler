@@ -21,7 +21,6 @@ namespace FactorySheduler
 
         public NetworkScanner()
         {
-            thisDeviceIP = getThisDeviceIp();
             if (thisDeviceIP == "") {
                 return;
             }
@@ -40,10 +39,11 @@ namespace FactorySheduler
         /// Vrátí IP tohoto zařízení
         /// </summary>
         /// <returns>ip</returns>
-        private string getThisDeviceIp() {
+        public string getThisDeviceIp() {
             NetworkInterface[] interfaces = NetworkInterface.GetAllNetworkInterfaces();
             interfaces = interfaces.Where(i => i.NetworkInterfaceType == NetworkInterfaceType.Wireless80211 && i.OperationalStatus == OperationalStatus.Up).ToArray();
             if (interfaces.Length == 0) {
+                thisDeviceIP = "";
                 return "";
             }
 
@@ -51,10 +51,12 @@ namespace FactorySheduler
             UnicastIPAddressInformation[] ipInfo = interfaces[0].GetIPProperties().UnicastAddresses.Where(i => regexIp.Match(i.Address.ToString()).Success).ToArray();
             if (ipInfo.Length == 0)
             {
+                thisDeviceIP = "";
                 return "";
             }
 
-            return ipInfo[0].Address.ToString();
+            thisDeviceIP = ipInfo[0].Address.ToString();
+            return thisDeviceIP;
         }
 
         /// <summary>
