@@ -50,9 +50,12 @@ namespace FactorySheduler.Views
         /// </summary>
         /// <param name="ip">IP nalezeného zařízení</param>
         public void addDeviceIP(string ip) {
-            ListViewItem item = new ListViewItem(ip);
-            listView1.Items.Add(item);
-            ipItems.Add(ip,item);
+            if (!ipItems.ContainsKey(ip))
+            {
+                ListViewItem item = new ListViewItem(ip);
+                listView1.Items.Add(item);
+                ipItems.Add(ip, item);
+            }
         }
 
         /// <summary>

@@ -36,9 +36,9 @@
             this.propertyGrid = new System.Windows.Forms.PropertyGrid();
             this.buttonsLayout = new System.Windows.Forms.FlowLayoutPanel();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
+            this.mapBox = new System.Windows.Forms.PictureBox();
             this.timerRefresh = new System.Windows.Forms.Timer(this.components);
             this.buttonSearchNextDevices = new System.Windows.Forms.Button();
-            this.mapBox = new System.Windows.Forms.PictureBox();
             this.panel1.SuspendLayout();
             this.flowLayoutPanel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
@@ -126,6 +126,15 @@
             this.splitContainer1.SplitterDistance = 664;
             this.splitContainer1.TabIndex = 11;
             // 
+            // mapBox
+            // 
+            this.mapBox.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.mapBox.Location = new System.Drawing.Point(0, 0);
+            this.mapBox.Name = "mapBox";
+            this.mapBox.Size = new System.Drawing.Size(664, 547);
+            this.mapBox.TabIndex = 0;
+            this.mapBox.TabStop = false;
+            // 
             // timerRefresh
             // 
             this.timerRefresh.Interval = 300;
@@ -142,15 +151,6 @@
             this.buttonSearchNextDevices.Text = "Hledat další zařízení";
             this.buttonSearchNextDevices.UseVisualStyleBackColor = true;
             this.buttonSearchNextDevices.Click += new System.EventHandler(this.buttonSearchNextDevices_Click);
-            // 
-            // mapBox
-            // 
-            this.mapBox.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.mapBox.Location = new System.Drawing.Point(0, 0);
-            this.mapBox.Name = "mapBox";
-            this.mapBox.Size = new System.Drawing.Size(664, 547);
-            this.mapBox.TabIndex = 0;
-            this.mapBox.TabStop = false;
             // 
             // MapView
             // 

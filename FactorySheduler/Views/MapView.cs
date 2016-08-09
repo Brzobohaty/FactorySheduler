@@ -39,7 +39,9 @@ namespace FactorySheduler.Views
                 button.Appearance = Appearance.Button;
                 button.AutoSize = true;
                 button.Padding = new Padding(2, 2, 2, 2);
-                button.Text = cart.name; // + "\n" + "připojeno"
+                button.Text = cart.name + "\n" + cart.alias;
+                button.TextAlign = ContentAlignment.MiddleCenter;
+                button.FlatStyle = FlatStyle.Flat;
                 buttonsLayout.Controls.Add(button);
                 button.CheckedChanged += buttonDeviceClicked;
                 button.Tag = cart;
@@ -79,7 +81,7 @@ namespace FactorySheduler.Views
             for (int j = 0; j < carts.Count(); j++)
             {
                 Cart cart = carts[j];
-                cart.asociatedButton.Text = cart.name;
+                cart.asociatedButton.Text = cart.name + "\n" + cart.alias;
                 if (cart.errorMessage == "")
                 {
                     cart.asociatedButton.BackColor = Color.Green;
@@ -152,17 +154,31 @@ namespace FactorySheduler.Views
         /// <param name="cart">vozík</param>
         private void paintCart(Graphics g, Cart cart)
         {
+            Color color = Color.Black;
+            if (cart.asociatedButton.Checked) {
+                color = Color.Goldenrod;
+            }
+
             //vykreslení základny vozíku
-            Pen pen = new Pen(Color.Black, cart.distanceFromHedghogToLeftSideOfCart+cart.distanceFromHedghogToRightSideOfCart);
+            Pen pen = new Pen(color, cart.distanceFromHedghogToLeftSideOfCart+cart.distanceFromHedghogToRightSideOfCart);
+            pen.EndCap = LineCap.Round;
             MathLibrary.Point firstPoint = MathLibrary.getPointOnLine(cart.position.X, cart.position.Y, cart.angle - 180, cart.longg/2);
             MathLibrary.Point secondPoint = MathLibrary.getPointOnLine(cart.position.X, cart.position.Y, cart.angle, cart.longg/2);
             g.DrawLine(pen, (float)firstPoint.X, (float)firstPoint.Y, (float)secondPoint.X, (float)secondPoint.Y);
 
-            //vzkreslení názvu
+            paintCartAlias(g, cart);
+        }
+
+        /// <summary>
+        /// Vykreslení zkratky na vozíku
+        /// </summary>
+        /// <param name="g">grafika mapy</param>
+        /// <param name="cart">vozík</param>
+        private void paintCartAlias(Graphics g, Cart cart) {
             Font drawFont = new Font("Arial", 10);
             SolidBrush drawBrush = new SolidBrush(Color.White);
             SizeF stringSize = g.MeasureString(cart.alias, drawFont);
-            g.DrawString(cart.alias, drawFont, drawBrush, cart.position.X-(stringSize.Width/2), cart.position.Y - (stringSize.Height / 2), new StringFormat());
+            g.DrawString(cart.alias, drawFont, drawBrush, cart.position.X - (stringSize.Width / 2), cart.position.Y - (stringSize.Height / 2), new StringFormat());
         }
     }
 }

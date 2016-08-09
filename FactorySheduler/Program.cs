@@ -16,19 +16,19 @@ namespace FactorySheduler
         [STAThread]
         static void Main()
         {
-            try
-            {
+            //try
+            //{
                 //Application.EnableVisualStyles();
                 //Application.SetCompatibleTextRenderingDefault(false);
                 MainWindow mainWindow = MainWindow.getInstance();
                 Controller controller = new Controller(mainWindow);
                 Application.Run(mainWindow);
-            }
-            catch (Exception e)
-            {
-                logException(e.Message, e.StackTrace);
-                throw e;
-            }
+            //}
+            //catch (Exception e)
+            //{
+            //    logException(e.Message, e.StackTrace);
+            //    throw e;
+            //}
         }
 
         public static void logException(string content, string stackTrace)

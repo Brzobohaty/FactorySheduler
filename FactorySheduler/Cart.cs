@@ -28,6 +28,10 @@ namespace FactorySheduler
         [Description("IP adresa Arduino zařízení na vozíku.")]
         public string ip { get; protected set; } //ip adresa Arduino zařízení
         [ReadOnly(true)]
+        [DisplayName("Adresa majáku")]
+        [Description("Adresa ultrazvukového majáku, který je umístěn na tomto vozíku.")]
+        public int beaconAddress { get; set; } //adresa ultrazvukového majáku umístěného na vozíku
+        [ReadOnly(true)]
         [DisplayName("Chybová hláška")]
         [Description("V případě, že nastala nějaká chyba, proměnná obsahuje chybovou hlášku.")]
         public string errorMessage { get; set; } //pokud nastala nějaká chyba, bude tato proměnná obsahovat chybovou hlášku, jinak ""
@@ -37,10 +41,6 @@ namespace FactorySheduler
         [DisplayName("Aktuální pozice")]
         [Description("Příznak, zda je pozice aktuální nebo zda se jedná pouze o poslední známou pozici.")]
         public bool isPositionActual { get; protected set; } //příznak, zda je pozice aktuální
-        [ReadOnly(true)]
-        [DisplayName("Adresa majáku")]
-        [Description("Adresa ultrazvukového majáku, který je umístěn na tomto vozíku.")]
-        public int beaconAddress { get; set; } //adresa ultrazvukového majáku umístěného na vozíku
         [Browsable(false)]
         public RadioButton asociatedButton { get; set; } //tlačítko ve view přiřazené k tomuto vozíku 
         [Browsable(false)]

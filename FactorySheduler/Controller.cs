@@ -45,12 +45,16 @@ namespace FactorySheduler
         /// Proskenuje Wifi síť a najde vyhovující zařízení
         /// </summary>
         private void scanNetwork() {
-            carts.Clear();
             if (networkScanner.getThisDeviceIp() != "")
             {
+                if (test)
+                {
+                    addTestCarts(5);
+                }
                 networkScannerView.showThisDeviceIP(networkScanner.thisDeviceIP);
                 mainWindow.showMessage(MessageTypeEnum.progress, "Hledám a rozeznávám zařízení v síti ...");
                 networkScanner.scanNetwork(networkScanner.thisDeviceIP, finishIPSearching);
+                
             }
             else {
                 if (test) {
@@ -70,10 +74,15 @@ namespace FactorySheduler
             for (int i = 0; i < count; i++)
             {
                 string ip = "192.254.48."+i;
-                TestCart cart = new TestCart(ip, dashboard, startPeriodicScanOfDashboardConnection);
-                carts.Add(ip, cart);
-                cart.beaconAddress = i+50;
-                cart.startPeriodicScanOfPosition();
+                if (!carts.ContainsKey(ip))
+                {
+                    TestCart cart = new TestCart(ip, dashboard, startPeriodicScanOfDashboardConnection);
+                    carts.Add(ip, cart);
+                    cart.beaconAddress = i + 50;
+                    cart.startPeriodicScanOfPosition();
+                }
+                needCheckCount++;
+                networkScannerView.addDeviceIP(ip);
             }
         }
 
@@ -83,10 +92,12 @@ namespace FactorySheduler
         /// <param name="ip">IP arduino zařízení na vozíku</param>
         private void createCart(string ip)
         {
-            Cart cart = new Cart(ip, dashboard, startPeriodicScanOfDashboardConnection);
-            carts.Add(ip, cart);
-            networkScannerView.addDeviceIP(ip);
+            if (!carts.ContainsKey(ip)) {
+                Cart cart = new Cart(ip, dashboard, startPeriodicScanOfDashboardConnection);
+                carts.Add(ip, cart);
+            }
             needCheckCount++;
+            networkScannerView.addDeviceIP(ip);
         }
 
         /// <summary>
@@ -148,13 +159,17 @@ namespace FactorySheduler
         /// </summary>
         private void nextStepAfterNetworkScan()
         {
-            //TODO doplnit callback
-            mapView = new MapView(null);
+            mapView = new MapView(searchNextDevices);
             mainWindow.setView(mapView);
             mapView.addCarts(carts.Values.ToList());
             if (!connectToDashBoard()) {
                 startPeriodicScanOfDashboardConnection();
             }
+        }
+
+        private void searchNextDevices() {
+            scanNetwork();
+            //TODO dodělat párování
         }
 
         /// <summary>
@@ -208,7 +223,6 @@ namespace FactorySheduler
             {
                 BackgroundWorker b = o as BackgroundWorker;
 
-                //TODO spustit ve vlákně
                 List<Cart> cartsList = carts.Values.ToList();
                 int maxBeaconAdress = 20;
                 for (int address = 1; address <= maxBeaconAdress; address++)
@@ -262,6 +276,18 @@ namespace FactorySheduler
             bw.RunWorkerCompleted += new RunWorkerCompletedEventHandler(
             delegate (object o, RunWorkerCompletedEventArgs args)
             {
+                if (test)
+                {
+                    List<Cart> cartsList = carts.Values.ToList();
+                    for (int i = 0; i < cartsList.Count(); i++)
+                    {
+                        if (cartsList[i] is TestCart)
+                        {
+                            cartsList[i].beaconAddress = i + 50;
+                            cartsList[i].errorMessage = "";
+                        }
+                    }
+                }
                 mainWindow.showMessage(MessageTypeEnum.success, "Párování bylo dokončeno.");
                 mapView.startPeriodicRefresh();
             });
