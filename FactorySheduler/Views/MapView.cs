@@ -18,6 +18,7 @@ namespace FactorySheduler.Views
     {
         private List<Cart> carts; //vozíky
         private Action buttonSearchNextDevicesCallback; //callback při kliknutí na tlačítko hledat další zařízení
+        private Cart selectedCart; //právě vybraný vozík
 
         public MapView(Action buttonSearchNextDevicesCallback)
         {
@@ -111,6 +112,7 @@ namespace FactorySheduler.Views
             if (button.Checked)
             {
                 Cart cart = (Cart)button.Tag;
+                selectedCart = cart;
                 showProperties(cart);
             }
         }
@@ -179,6 +181,26 @@ namespace FactorySheduler.Views
             SolidBrush drawBrush = new SolidBrush(Color.White);
             SizeF stringSize = g.MeasureString(cart.alias, drawFont);
             g.DrawString(cart.alias, drawFont, drawBrush, cart.position.X - (stringSize.Width / 2), cart.position.Y - (stringSize.Height / 2), new StringFormat());
+        }
+
+        private void buttonFront_Click(object sender, EventArgs e)
+        {
+            selectedCart.moveFront();
+        }
+
+        private void buttonLeft_Click(object sender, EventArgs e)
+        {
+            selectedCart.turnLeft();
+        }
+
+        private void buttonRight_Click(object sender, EventArgs e)
+        {
+            selectedCart.turnRight();
+        }
+
+        private void buttonBack_Click(object sender, EventArgs e)
+        {
+            selectedCart.moveBack();
         }
     }
 }

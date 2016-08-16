@@ -47,5 +47,37 @@ namespace FactorySheduler
             errorMessage = "";
             return testPosition;
         }
+
+        /// <summary>
+        /// Pohne s vozíkem o kus dopředu
+        /// </summary>
+        public override void moveFront()
+        {
+            testPosition.Y -= 15;
+        }
+
+        /// <summary>
+        /// Pohne s vozíkem o kus dozadu
+        /// </summary>
+        public override void moveBack()
+        {
+            testPosition.Y += 15;
+        }
+
+        /// <summary>
+        /// Zatočí s vozíkem doleva
+        /// </summary>
+        public override void turnLeft()
+        {
+            testPosition.X -= 15;
+        }
+
+        /// <summary>
+        /// Zatočí s vozíkem doprava
+        /// </summary>
+        public override void turnRight()
+        {
+            testPosition.X += 15;
+        }
     }
 }

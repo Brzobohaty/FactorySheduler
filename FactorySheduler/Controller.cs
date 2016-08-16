@@ -127,9 +127,11 @@ namespace FactorySheduler
                 // what to do when worker completes its task (notify the user)
                 bw.RunWorkerCompleted += new RunWorkerCompletedEventHandler(delegate (object o, RunWorkerCompletedEventArgs args)
                 {
+                    mainWindow.setProgress((int)((cartsCount - needCheckCount) / (double)cartsCount * 100.0));
                     needCheckCount--;
                     if (needCheckCount == 0)
                     {
+                        mainWindow.setProgress(100);
                         finishNetworkSearching();
                     }
                 });
@@ -159,6 +161,7 @@ namespace FactorySheduler
         /// </summary>
         private void nextStepAfterNetworkScan()
         {
+            mainWindow.setProgress(0);
             mapView = new MapView(searchNextDevices);
             mainWindow.setView(mapView);
             mapView.addCarts(carts.Values.ToList());

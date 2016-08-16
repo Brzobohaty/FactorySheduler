@@ -268,5 +268,37 @@ namespace FactorySheduler
 
             return new Point((int)Math.Round(shiftedPosition.X), (int)Math.Round(shiftedPosition.Y));
         }
+
+        /// <summary>
+        /// Pohne s vozíkem o kus dopředu
+        /// </summary>
+        public virtual void moveFront()
+        {
+
+        }
+
+        /// <summary>
+        /// Pohne s vozíkem o kus dozadu
+        /// </summary>
+        public virtual void moveBack()
+        {
+
+        }
+
+        /// <summary>
+        /// Zatočí s vozíkem doleva
+        /// </summary>
+        public virtual void turnLeft()
+        {
+
+        }
+
+        /// <summary>
+        /// Zatočí s vozíkem doprava
+        /// </summary>
+        public virtual void turnRight()
+        {
+
+        }
     }
 }
