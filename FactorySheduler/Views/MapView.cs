@@ -32,6 +32,7 @@ namespace FactorySheduler.Views
         /// <param name="carts"></param>
         public void addCarts(List<Cart> carts)
         {
+            buttonsLayout.Controls.Clear();
             this.carts = carts;
             for (int j = 0; j < carts.Count(); j++)
             {

@@ -20,6 +20,7 @@ namespace FactorySheduler
         private MapView mapView; //View pro zobrazení mapy zařízení 
         private System.Windows.Forms.Timer periodicCheckerOfDashboardConnection = new System.Windows.Forms.Timer(); //periodický kontroler připojení k aplikaci dashboard (v případě selhání připojení)
         private const bool test = true; //proměnná, která indikuje, že se má v případě selhání připojit simulační wifi síť se simulačními vozíky
+        private bool networkScanCompleted;
 
         /// <param name="mainWindow">hlavní okno aplikace</param>
         public Controller(MainWindow mainWindow)
@@ -152,6 +153,9 @@ namespace FactorySheduler
             else {
                 mainWindow.showMessage(MessageTypeEnum.success, "Bylo nalezeno " + carts.Count + " kompatibilních zařízení.");
                 networkScannerView.enableNextButton();
+                if (mapView != null) {
+                    searchNextDevicesStep2();
+                }
             }
             networkScannerView.setCountLabel(carts.Count);
         }
@@ -171,7 +175,19 @@ namespace FactorySheduler
         }
 
         private void searchNextDevices() {
+            mainWindow.setProgress(0);
             scanNetwork();
+            //TODO dodělat párování
+        }
+
+        private void searchNextDevicesStep2()
+        {
+            mainWindow.setProgress(0);
+            mapView.addCarts(carts.Values.ToList());
+            if (!connectToDashBoard())
+            {
+                startPeriodicScanOfDashboardConnection();
+            }
             //TODO dodělat párování
         }
 
