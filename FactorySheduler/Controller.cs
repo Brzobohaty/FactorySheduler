@@ -1,6 +1,7 @@
 ﻿using FactorySheduler.Views;
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Drawing;
 using System.Linq;
@@ -174,7 +175,7 @@ namespace FactorySheduler
             mapView = new MapView(searchNextDevices, reinicializeCart);
             mainWindow.setView(mapView);
             mapView.addCarts(carts.Values.ToList());
-            if (!connectToDashBoard())
+            if (!connectToDashBoardAndStaticBeacons())
             {
                 startPeriodicScanOfDashboardConnection();
             }
@@ -196,7 +197,7 @@ namespace FactorySheduler
         {
             mainWindow.setProgress(0);
             mapView.addCarts(carts.Values.ToList());
-            if (!connectToDashBoard())
+            if (!connectToDashBoardAndStaticBeacons())
             {
                 startPeriodicScanOfDashboardConnection();
             }
@@ -216,7 +217,7 @@ namespace FactorySheduler
             periodicCheckerOfDashboardConnection.Enabled = true;
             periodicCheckerOfDashboardConnection.Tick += delegate
             {
-                if (connectToDashBoard())
+                if (connectToDashBoardAndStaticBeacons())
                 {
                     periodicCheckerOfDashboardConnection.Dispose();
                 }
@@ -226,15 +227,32 @@ namespace FactorySheduler
         /// <summary>
         /// Připojení k aplikaci dashboard
         /// </summary>
-        private bool connectToDashBoard()
+        private bool connectToDashBoardAndStaticBeacons()
         {
             mainWindow.showMessage(MessageTypeEnum.progress, "Připojování k aplikaci dashboard ...");
             if (dashboard.checkConnectionToDashboard())
             {
                 mapView.setEnableRefreshButton(true);
-                mainWindow.showMessage(MessageTypeEnum.progress, "Párování Arduino zařízení s ultrazvukovými majáky ...");
-                pairArduinosWithBeacons();
-                return true;
+                mainWindow.showMessage(MessageTypeEnum.progress, "Kontrola statických majáků ...");
+                if (((StringCollection)Properties.Settings.Default["staticBeacons"]).Count > 0)
+                {
+                    if (checkConnectionToStaticBeacons())
+                    {
+                        mainWindow.showMessage(MessageTypeEnum.progress, "Párování Arduino zařízení s ultrazvukovými majáky ...");
+                        List<Point> staticBeaconsPositions = dashboard.getStaticBeaconsPositions();
+                        //TODO nastavit rozměry mapy podle souřadnic statickýh majáků 
+                        pairArduinosWithBeacons();
+                        return true;
+                    }
+                    else {
+                        mapView.setEnableRefreshButton(false);
+                        return false;
+                    }
+                }
+                else {
+                    SettingsStaticBeacons.getInstance().ShowDialog();
+                    return connectToDashBoardAndStaticBeacons();
+                }
             }
             else {
                 mapView.setEnableRefreshButton(false);
@@ -256,35 +274,24 @@ namespace FactorySheduler
                 BackgroundWorker b = o as BackgroundWorker;
 
                 List<Cart> cartsList = carts.Values.ToList();
-                int maxBeaconAdress = 20;
-                for (int address = 1; address <= maxBeaconAdress; address++)
+                List<string> beaconList = dashboard.getMobileBeaconsAdress();
+                foreach (string address in beaconList)
                 {
-                    if (dashboard.isDeviceConnected(address))
+                    int addresss = int.Parse(address);
+                    Point positionFromDashboard = dashboard.getDevicePosition(addresss);
+                    int cartsCount = cartsList.Count();
+                    for (int j = 0; j < cartsCount; j++)
                     {
-                        Point positionFromDashboard = dashboard.getDevicePosition(address);
-                        if (positionFromDashboard.X == 0 && positionFromDashboard.Y == 0)
+                        Cart cart = cartsList[j];
+                        Point positionFromArduino = cart.getPositionFromArduino();
+                        if (Math.Abs(positionFromArduino.X - positionFromDashboard.X) < 20 && Math.Abs(positionFromArduino.Y - positionFromDashboard.Y) < 20)
                         {
-                            b.ReportProgress((int)Math.Floor((address + 1) * (100.0 / (maxBeaconAdress + 1))));
-                            continue;
-                        }
-                        int cartsCount = cartsList.Count();
-                        for (int j = 0; j < cartsCount; j++)
-                        {
-                            Cart cart = cartsList[j];
-                            Point positionFromArduino = cart.getPositionFromArduino();
-                            if (positionFromDashboard.X == 0 && positionFromDashboard.Y == 0)
-                            {
-                                continue;
-                            }
-                            if (Math.Abs(positionFromArduino.X - positionFromDashboard.X) < 20 && Math.Abs(positionFromArduino.Y - positionFromDashboard.Y) < 20)
-                            {
-                                cart.beaconAddress = address;
-                                cart.startPeriodicScanOfPosition();
-                                cartsList.Remove(cartsList[j]);
-                            }
+                            cart.beaconAddress = addresss;
+                            cart.startPeriodicScanOfPosition();
+                            cartsList.Remove(cartsList[j]);
                         }
                     }
-                    b.ReportProgress((int)Math.Floor((address + 1) * (100.0 / (maxBeaconAdress + 1))));
+                    b.ReportProgress((int)Math.Floor((beaconList.IndexOf(address) + 1) * (100.0 / beaconList.Count)));
                 }
                 for (int j = 0; j < cartsList.Count(); j++)
                 {
@@ -340,43 +347,34 @@ namespace FactorySheduler
             {
                 BackgroundWorker b = o as BackgroundWorker;
 
-                int maxBeaconAdress = 20;
                 if (cart.errorMessage == "")
                 {
                     cart.errorMessage = "Nebyl nalezen maják, který by šel spárovat s daným zařízením.";
                 }
-                for (int address = 1; address <= maxBeaconAdress; address++)
+                List<string> beaconList = dashboard.getMobileBeaconsAdress();
+                foreach (string address in beaconList)
                 {
-                    if (dashboard.isDeviceConnected(address))
+                    int addresss = int.Parse(address);
+
+                    Point positionFromDashboard = dashboard.getDevicePosition(addresss);
+                    Point positionFromArduino = cart.getPositionFromArduino();
+                    if (Math.Abs(positionFromArduino.X - positionFromDashboard.X) < 20 && Math.Abs(positionFromArduino.Y - positionFromDashboard.Y) < 20)
                     {
-                        Point positionFromDashboard = dashboard.getDevicePosition(address);
-                        if (positionFromDashboard.X == 0 && positionFromDashboard.Y == 0)
+                        cart.beaconAddress = addresss;
+                        cart.startPeriodicScanOfPosition();
+                        cart.errorMessage = "";
+                        b.ReportProgress(100);
+                        break;
+                    }
+                    else {
+                        cart.beaconAddress = -1;
+                        if (cart.errorMessage == "")
                         {
-                            b.ReportProgress((int)Math.Floor((address + 1) * (100.0 / (maxBeaconAdress + 1))));
-                            continue;
-                        }
-                        Point positionFromArduino = cart.getPositionFromArduino();
-                        if (positionFromDashboard.X == 0 && positionFromDashboard.Y == 0)
-                        {
-                            continue;
-                        }
-                        if (Math.Abs(positionFromArduino.X - positionFromDashboard.X) < 20 && Math.Abs(positionFromArduino.Y - positionFromDashboard.Y) < 20)
-                        {
-                            cart.beaconAddress = address;
-                            cart.startPeriodicScanOfPosition();
-                            cart.errorMessage = "";
-                            b.ReportProgress(100);
-                            break;
-                        }
-                        else {
-                            cart.beaconAddress = -1;
-                            if (cart.errorMessage == "")
-                            {
-                                cart.errorMessage = "Nebyl nalezen maják, který by šel spárovat s daným zařízením.";
-                            }
+                            cart.errorMessage = "Nebyl nalezen maják, který by šel spárovat s daným zařízením.";
                         }
                     }
-                    b.ReportProgress((int)Math.Floor((address + 1) * (100.0 / (maxBeaconAdress + 1))));
+
+                    b.ReportProgress((int)Math.Floor((beaconList.IndexOf(address) + 1) * (100.0 / beaconList.Count)));
                 }
             });
 
@@ -401,6 +399,39 @@ namespace FactorySheduler
             });
 
             bw.RunWorkerAsync();
+        }
+
+        /// <summary>
+        /// Zkontroluje, zda jsou připojeny všechny statické majáky
+        /// </summary>
+        /// <returns></returns>
+        private bool checkConnectionToStaticBeacons()
+        {
+            bool ok = true;
+            StringCollection notConnected = new StringCollection();
+            StringCollection staticBeacons = (StringCollection)Properties.Settings.Default["staticBeacons"];
+            for (int i = 0; i < staticBeacons.Count; i++)
+            {
+                if (!dashboard.isDeviceConnected(int.Parse(staticBeacons[i])))
+                {
+                    ok = false;
+                    notConnected.Add(staticBeacons[i]);
+                }
+            }
+            if (!ok)
+            {
+                string adressString = "";
+                foreach (string adress in notConnected)
+                {
+                    if (adressString != "")
+                    {
+                        adressString += ", ";
+                    }
+                    adressString += adress;
+                }
+                mainWindow.showMessage(MessageTypeEnum.error, "Nepodařilo se získat informace ze statických majáků s adresou: " + adressString);
+            }
+            return ok;
         }
     }
 }

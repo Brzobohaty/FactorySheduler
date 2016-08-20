@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Drawing;
 using System.Linq;
 using System.Net;
@@ -14,12 +15,14 @@ namespace FactorySheduler
     /// </summary>
     public class Dashboard
     {
+        private const int maxBeaconAdress = 40; //maximální adresa majáku
 
         /// <summary>
         /// Zkontroluje, zda se lze připojit k aplikaci dashboard na localhostu přes UDP na portu 4444
         /// </summary>
         /// <returns>true pokud ano</returns>
-        public bool checkConnectionToDashboard() {
+        public bool checkConnectionToDashboard()
+        {
             try
             {
                 UdpClient udpClient = new UdpClient();
@@ -41,13 +44,14 @@ namespace FactorySheduler
                 return false;
             }
         }
-        
+
         /// <summary>
         /// Zjistí, zda je ultrazvukový maják s danou adresou připojen.
         /// </summary>
         /// <param name="adress">adresa majáku</param>
         /// <returns>true pokud je připojen</returns>
-        public bool isDeviceConnected(int adress) {
+        public bool isDeviceConnected(int adress)
+        {
             try
             {
                 UdpClient udpClient = new UdpClient();
@@ -60,7 +64,7 @@ namespace FactorySheduler
 
                 // Blocks until a message returns on this socket from a remote host.
                 Byte[] receiveBytes = udpClient.Receive(ref dashboardEndPoint);
-                
+
                 int xPosition = BitConverter.ToInt16(receiveBytes, 9);
                 int yPosition = BitConverter.ToInt16(receiveBytes, 11);
                 int zPosition = BitConverter.ToInt16(receiveBytes, 13);
@@ -84,7 +88,7 @@ namespace FactorySheduler
         /// <summary>
         /// Zjistí aktuální polohu majáku s danou adresou
         /// </summary>
-        /// <param name="adress">adresa majáku</param>
+        /// <param name="adresss">adresa majáku</param>
         /// <returns>souřadnice aktuální polohy majáku nebo 0,0 pokud nastala chyba</returns>
         public Point getDevicePosition(int adress)
         {
@@ -112,7 +116,7 @@ namespace FactorySheduler
             }
             catch (Exception e)
             {
-                return new Point(0,0);
+                return new Point(0, 0);
             }
         }
 
@@ -146,6 +150,55 @@ namespace FactorySheduler
             buf[len] = c[0];
             buf[len + 1] = c[1];
             return buf;
+        }
+
+        /// <summary>
+        /// Najde adresy všech majáků (statických i mobilních)
+        /// </summary>
+        /// <returns>list adres</returns>
+        public List<string> getAllBeaconsAdress()
+        {
+            List<string> beaconsAdress = new List<string>();
+            for (int address = 1; address <= maxBeaconAdress; address++)
+            {
+                if (isDeviceConnected(address))
+                {
+                    beaconsAdress.Add(address.ToString());
+                }
+            }
+            return beaconsAdress;
+        }
+
+        /// <summary>
+        /// Najde adresy všech mobilních majáků
+        /// </summary>
+        /// <returns>list adres</returns>
+        public List<string> getMobileBeaconsAdress()
+        {
+            List<string> beaconsAdress = new List<string>();
+            for (int address = 1; address <= maxBeaconAdress; address++)
+            {
+                if (!((StringCollection)Properties.Settings.Default["staticBeacons"]).Contains(address.ToString()) && isDeviceConnected(address))
+                {
+                    beaconsAdress.Add(address.ToString());
+                }
+            }
+            return beaconsAdress;
+        }
+
+        /// <summary>
+        /// Vrátí list poloh všech statických majáků
+        /// </summary>
+        /// <returns></returns>
+        public List<Point> getStaticBeaconsPositions()
+        {
+            StringCollection staticBeaconAdress = (StringCollection)Properties.Settings.Default["staticBeacons"];
+            List<Point> beaconsPositions = new List<Point>();
+            foreach (string address in staticBeaconAdress)
+            {
+                beaconsPositions.Add(getDevicePosition(int.Parse(address)));
+            }
+            return beaconsPositions;
         }
     }
 }

@@ -96,5 +96,10 @@ namespace FactorySheduler.Views
             progressBar.Value = value;
             progressBar.Refresh();
         }
+
+        private void staticBeaconsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            SettingsStaticBeacons.getInstance().ShowDialog();
+        }
     }
 }
