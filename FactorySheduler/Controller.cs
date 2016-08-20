@@ -20,7 +20,6 @@ namespace FactorySheduler
         private MapView mapView; //View pro zobrazení mapy zařízení 
         private System.Windows.Forms.Timer periodicCheckerOfDashboardConnection = new System.Windows.Forms.Timer(); //periodický kontroler připojení k aplikaci dashboard (v případě selhání připojení)
         private const bool test = true; //proměnná, která indikuje, že se má v případě selhání připojit simulační wifi síť se simulačními vozíky
-        private bool networkScanCompleted;
 
         /// <param name="mainWindow">hlavní okno aplikace</param>
         public Controller(MainWindow mainWindow)
@@ -45,7 +44,8 @@ namespace FactorySheduler
         /// <summary>
         /// Proskenuje Wifi síť a najde vyhovující zařízení
         /// </summary>
-        private void scanNetwork() {
+        private void scanNetwork()
+        {
             if (networkScanner.getThisDeviceIp() != "")
             {
                 if (test)
@@ -55,10 +55,11 @@ namespace FactorySheduler
                 networkScannerView.showThisDeviceIP(networkScanner.thisDeviceIP);
                 mainWindow.showMessage(MessageTypeEnum.progress, "Hledám a rozeznávám zařízení v síti ...");
                 networkScanner.scanNetwork(networkScanner.thisDeviceIP, finishIPSearching);
-                
+
             }
             else {
-                if (test) {
+                if (test)
+                {
                     addTestCarts(5);
                     nextStepAfterNetworkScan();
                     mapView.startPeriodicRefresh();
@@ -71,10 +72,11 @@ namespace FactorySheduler
         /// Přidá další testovací simulace vozíků pro testování
         /// </summary>
         /// <param name="count">počet přidaných vozíků</param>
-        private void addTestCarts(int count) {
+        private void addTestCarts(int count)
+        {
             for (int i = 0; i < count; i++)
             {
-                string ip = "192.254.48."+i;
+                string ip = "192.254.48." + i;
                 if (!carts.ContainsKey(ip))
                 {
                     TestCart cart = new TestCart(ip, dashboard, startPeriodicScanOfDashboardConnection);
@@ -93,7 +95,8 @@ namespace FactorySheduler
         /// <param name="ip">IP arduino zařízení na vozíku</param>
         private void createCart(string ip)
         {
-            if (!carts.ContainsKey(ip)) {
+            if (!carts.ContainsKey(ip))
+            {
                 Cart cart = new Cart(ip, dashboard, startPeriodicScanOfDashboardConnection);
                 carts.Add(ip, cart);
             }
@@ -104,7 +107,8 @@ namespace FactorySheduler
         /// <summary>
         /// Callback pro dokončení hledání IP, na kterých by mohlo být arduino zařízení
         /// </summary>
-        private void finishIPSearching() {
+        private void finishIPSearching()
+        {
             List<Cart> cartsList = carts.Values.ToList();
             int cartsCount = cartsList.Count();
             for (int j = 0; j < cartsCount; j++)
@@ -153,7 +157,8 @@ namespace FactorySheduler
             else {
                 mainWindow.showMessage(MessageTypeEnum.success, "Bylo nalezeno " + carts.Count + " kompatibilních zařízení.");
                 networkScannerView.enableNextButton();
-                if (mapView != null) {
+                if (mapView != null)
+                {
                     searchNextDevicesStep2();
                 }
             }
@@ -166,20 +171,27 @@ namespace FactorySheduler
         private void nextStepAfterNetworkScan()
         {
             mainWindow.setProgress(0);
-            mapView = new MapView(searchNextDevices);
+            mapView = new MapView(searchNextDevices, reinicializeCart);
             mainWindow.setView(mapView);
             mapView.addCarts(carts.Values.ToList());
-            if (!connectToDashBoard()) {
+            if (!connectToDashBoard())
+            {
                 startPeriodicScanOfDashboardConnection();
             }
         }
 
-        private void searchNextDevices() {
+        /// <summary>
+        /// Hledání dalších zařízení (první krok při opětovné inicializaci na stránce mapy)
+        /// </summary>
+        private void searchNextDevices()
+        {
             mainWindow.setProgress(0);
             scanNetwork();
-            //TODO dodělat párování
         }
 
+        /// <summary>
+        /// Párování zařízení (druhý krok při opětovné inicializaci na stránce mapy)
+        /// </summary>
         private void searchNextDevicesStep2()
         {
             mainWindow.setProgress(0);
@@ -188,7 +200,6 @@ namespace FactorySheduler
             {
                 startPeriodicScanOfDashboardConnection();
             }
-            //TODO dodělat párování
         }
 
         /// <summary>
@@ -196,7 +207,8 @@ namespace FactorySheduler
         /// </summary>
         public void startPeriodicScanOfDashboardConnection()
         {
-            if (periodicCheckerOfDashboardConnection.Enabled) {
+            if (periodicCheckerOfDashboardConnection.Enabled)
+            {
                 return;
             }
             periodicCheckerOfDashboardConnection = new System.Windows.Forms.Timer();
@@ -214,7 +226,8 @@ namespace FactorySheduler
         /// <summary>
         /// Připojení k aplikaci dashboard
         /// </summary>
-        private bool connectToDashBoard() {
+        private bool connectToDashBoard()
+        {
             mainWindow.showMessage(MessageTypeEnum.progress, "Připojování k aplikaci dashboard ...");
             if (dashboard.checkConnectionToDashboard())
             {
@@ -309,6 +322,81 @@ namespace FactorySheduler
                 }
                 mainWindow.showMessage(MessageTypeEnum.success, "Párování bylo dokončeno.");
                 mapView.startPeriodicRefresh();
+            });
+
+            bw.RunWorkerAsync();
+        }
+
+        /// <summary>
+        /// Znovu spustí celý inicializační proces kromě vyhledávání zařízení v síti pro daný vozík
+        /// </summary>
+        /// <param name="cart">vozík</param>
+        private void reinicializeCart(Cart cart)
+        {
+            BackgroundWorker bw = new BackgroundWorker();
+            bw.WorkerReportsProgress = true;
+
+            bw.DoWork += new DoWorkEventHandler(delegate (object o, DoWorkEventArgs args)
+            {
+                BackgroundWorker b = o as BackgroundWorker;
+
+                int maxBeaconAdress = 20;
+                if (cart.errorMessage == "")
+                {
+                    cart.errorMessage = "Nebyl nalezen maják, který by šel spárovat s daným zařízením.";
+                }
+                for (int address = 1; address <= maxBeaconAdress; address++)
+                {
+                    if (dashboard.isDeviceConnected(address))
+                    {
+                        Point positionFromDashboard = dashboard.getDevicePosition(address);
+                        if (positionFromDashboard.X == 0 && positionFromDashboard.Y == 0)
+                        {
+                            b.ReportProgress((int)Math.Floor((address + 1) * (100.0 / (maxBeaconAdress + 1))));
+                            continue;
+                        }
+                        Point positionFromArduino = cart.getPositionFromArduino();
+                        if (positionFromDashboard.X == 0 && positionFromDashboard.Y == 0)
+                        {
+                            continue;
+                        }
+                        if (Math.Abs(positionFromArduino.X - positionFromDashboard.X) < 20 && Math.Abs(positionFromArduino.Y - positionFromDashboard.Y) < 20)
+                        {
+                            cart.beaconAddress = address;
+                            cart.startPeriodicScanOfPosition();
+                            b.ReportProgress(100);
+                            break;
+                        }
+                        else {
+                            cart.beaconAddress = -1;
+                            if (cart.errorMessage == "")
+                            {
+                                cart.errorMessage = "Nebyl nalezen maják, který by šel spárovat s daným zařízením.";
+                            }
+                        }
+                    }
+                    b.ReportProgress((int)Math.Floor((address + 1) * (100.0 / (maxBeaconAdress + 1))));
+                }
+            });
+
+            // what to do when progress changed (update the progress bar for example)
+            bw.ProgressChanged += new ProgressChangedEventHandler(
+            delegate (object o, ProgressChangedEventArgs args)
+            {
+                mainWindow.setProgress(args.ProgressPercentage);
+            });
+
+            // what to do when worker completes its task (notify the user)
+            bw.RunWorkerCompleted += new RunWorkerCompletedEventHandler(
+            delegate (object o, RunWorkerCompletedEventArgs args)
+            {
+                if (cart is TestCart)
+                {
+                    cart.beaconAddress = 50;
+                    cart.errorMessage = "";
+                }
+
+                mainWindow.showMessage(MessageTypeEnum.success, "Párování bylo dokončeno.");
             });
 
             bw.RunWorkerAsync();

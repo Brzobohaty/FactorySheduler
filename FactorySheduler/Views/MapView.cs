@@ -19,10 +19,12 @@ namespace FactorySheduler.Views
         private List<Cart> carts; //vozíky
         private Action buttonSearchNextDevicesCallback; //callback při kliknutí na tlačítko hledat další zařízení
         private Cart selectedCart; //právě vybraný vozík
+        private Action<Cart> reinicializeCart; //callback při kliknutí na tlačítko reinicializace jednoho vozíku
 
-        public MapView(Action buttonSearchNextDevicesCallback)
+        public MapView(Action buttonSearchNextDevicesCallback, Action<Cart> reinicializeCart)
         {
             this.buttonSearchNextDevicesCallback = buttonSearchNextDevicesCallback;
+            this.reinicializeCart = reinicializeCart;
             InitializeComponent();
         }
 
@@ -71,6 +73,7 @@ namespace FactorySheduler.Views
         /// <param name="enabled">true pokud zapnout</param>
         public void setEnableRefreshButton(bool enabled) {
             buttonSearchNextDevices.Enabled = enabled;
+            buttonReinicializeCart.Enabled = enabled;
         }
 
         /// <summary>
@@ -202,6 +205,11 @@ namespace FactorySheduler.Views
         private void buttonBack_Click(object sender, EventArgs e)
         {
             selectedCart.moveBack();
+        }
+
+        private void buttonReinicializeCart_Click(object sender, EventArgs e)
+        {
+            reinicializeCart(selectedCart);
         }
     }
 }

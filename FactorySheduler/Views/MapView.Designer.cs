@@ -39,7 +39,7 @@
             this.buttonLeft = new System.Windows.Forms.Button();
             this.button3 = new System.Windows.Forms.Button();
             this.buttonFront = new System.Windows.Forms.Button();
-            this.button1 = new System.Windows.Forms.Button();
+            this.buttonReinicializeCart = new System.Windows.Forms.Button();
             this.button8 = new System.Windows.Forms.Button();
             this.buttonRight = new System.Windows.Forms.Button();
             this.propertyGrid = new System.Windows.Forms.PropertyGrid();
@@ -88,7 +88,7 @@
             this.tableLayoutPanel1.Controls.Add(this.buttonLeft, 0, 1);
             this.tableLayoutPanel1.Controls.Add(this.button3, 2, 0);
             this.tableLayoutPanel1.Controls.Add(this.buttonFront, 1, 0);
-            this.tableLayoutPanel1.Controls.Add(this.button1, 0, 0);
+            this.tableLayoutPanel1.Controls.Add(this.buttonReinicializeCart, 0, 0);
             this.tableLayoutPanel1.Controls.Add(this.button8, 1, 1);
             this.tableLayoutPanel1.Controls.Add(this.buttonRight, 2, 1);
             this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Bottom;
@@ -165,15 +165,16 @@
             this.buttonFront.UseVisualStyleBackColor = true;
             this.buttonFront.Click += new System.EventHandler(this.buttonFront_Click);
             // 
-            // button1
+            // buttonReinicializeCart
             // 
-            this.button1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.button1.Location = new System.Drawing.Point(3, 3);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(67, 37);
-            this.button1.TabIndex = 0;
-            this.button1.Text = "button1";
-            this.button1.UseVisualStyleBackColor = true;
+            this.buttonReinicializeCart.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.buttonReinicializeCart.Location = new System.Drawing.Point(3, 3);
+            this.buttonReinicializeCart.Name = "buttonReinicializeCart";
+            this.buttonReinicializeCart.Size = new System.Drawing.Size(67, 37);
+            this.buttonReinicializeCart.TabIndex = 0;
+            this.buttonReinicializeCart.Text = "Reinicializovat";
+            this.buttonReinicializeCart.UseVisualStyleBackColor = true;
+            this.buttonReinicializeCart.Click += new System.EventHandler(this.buttonReinicializeCart_Click);
             // 
             // button8
             // 
@@ -297,7 +298,7 @@
         private System.Windows.Forms.Button buttonSearchNextDevices;
         private System.Windows.Forms.PictureBox mapBox;
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel1;
-        private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.Button buttonReinicializeCart;
         private System.Windows.Forms.Button button7;
         private System.Windows.Forms.Button buttonBack;
         private System.Windows.Forms.Button button5;
