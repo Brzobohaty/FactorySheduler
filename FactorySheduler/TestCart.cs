@@ -43,7 +43,6 @@ namespace FactorySheduler
         /// <returns>0,0 pokud nastala chyba</returns>
         public override Point getPositionFromArduino()
         {
-            isPositionActual = true;
             errorMessage = "";
             return testPosition;
         }

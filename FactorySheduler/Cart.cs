@@ -16,8 +16,11 @@ namespace FactorySheduler
     {
         protected RestClient client; //client pro odesílání REST dotazů na Arduino
         protected System.Timers.Timer periodicCheckerPosition; //periodický kontroler polohy vozíku
-        protected const int positionPeriodLength = 1000; //délka periody v milisekundách - jak často se bude aktualizovat poloha vozíku
+        protected System.Timers.Timer periodicCheckerStatus; //periodický kontroler stavu vozíku
+        protected const int positionPeriodLength = 300; //délka periody v milisekundách - jak často se bude aktualizovat poloha vozíku
+        protected const int statusPeriodLength = 10000; //délka periody v milisekundách - jak často se bude kontrolovat stab arduina
         protected Dashboard dashboard; //Objekt představující připojení k Dashboard aplikaci
+        protected string errorType = ""; //typ chyby
         [DisplayName("Název")]
         [Description("Název zařízení pouze pro identifikaci v této aplikaci.")]
         public string name { get; set; } //název vozíku
@@ -40,6 +43,7 @@ namespace FactorySheduler
         public Point position { get; protected set; } //poslední známá pozice
         [DisplayName("Aktuální pozice")]
         [Description("Příznak, zda je pozice aktuální nebo zda se jedná pouze o poslední známou pozici.")]
+        //TODO smazat nebo sprovoznit
         public bool isPositionActual { get; protected set; } //příznak, zda je pozice aktuální
         [Browsable(false)]
         public RadioButton asociatedButton { get; set; } //tlačítko ve view přiřazené k tomuto vozíku 
@@ -120,6 +124,14 @@ namespace FactorySheduler
                 longg = distanceFromHedghogToBackOfCart + distanceFromHedghogToFrontOfCart;
                 width = distanceFromHedghogToLeftSideOfCart + distanceFromHedghogToRightSideOfCart;
             };
+
+            periodicCheckerStatus = new System.Timers.Timer();
+            periodicCheckerStatus.Interval = statusPeriodLength;
+            periodicCheckerStatus.Enabled = true;
+            periodicCheckerStatus.Elapsed += delegate
+            {
+                getPositionFromArduinoAsync(delegate (Point position){});
+            };
         }
 
         /// <summary>
@@ -133,16 +145,43 @@ namespace FactorySheduler
             {
                 isPositionActual = false;
                 errorMessage = "Nastala chyba při dotazování pozice majáku na aplikaci Dashboard";
+                errorType = "dashboard";
                 dashboarConnectionFaildCallback();
                 return false;
             }
             else
             {
                 isPositionActual = true;
-                errorMessage = "";
+                if (errorType == "dashboard") {
+                    errorMessage = "";
+                    errorType = "";
+                }
                 position = shiftPosition(point);
                 return true;
             }
+        }
+
+        /// <summary>
+        /// Vrátí aktuální pozici vozíku pomocí callbacku asynchroně
+        /// </summary>
+        public virtual void getPositionFromArduinoAsync(Action<Point> callback)
+        {
+            BackgroundWorker bw = new BackgroundWorker();
+            Point position = new Point(0,0);
+
+            bw.DoWork += new DoWorkEventHandler(delegate (object o, DoWorkEventArgs args)
+            {
+                position = getPositionFromArduino();
+            });
+
+            // what to do when worker completes its task (notify the user)
+            bw.RunWorkerCompleted += new RunWorkerCompletedEventHandler(
+            delegate (object o, RunWorkerCompletedEventArgs args)
+            {
+                callback(position);
+            });
+
+            bw.RunWorkerAsync();
         }
 
         /// <summary>
@@ -152,6 +191,7 @@ namespace FactorySheduler
         public virtual Point getPositionFromArduino()
         {
             RestRequest request = new RestRequest("arduino/position/", Method.GET);
+            request.Timeout = 3000;
             IRestResponse response = client.Execute(request);
             HttpStatusCode status = response.StatusCode;
             if (status == HttpStatusCode.OK)
@@ -159,14 +199,14 @@ namespace FactorySheduler
                 string content = response.Content.Trim();
                 if (content == "NO_HEDGEHOG_CONNECTION_OR_NO_POSITION_UPDATE")
                 {
-                    isPositionActual = false;
                     errorMessage = "Chyba spojení mobilního majáku s Arduino nebo pouze není měřena pozice. Případně zkuste restartovat maják (alespoň 5 sekund podržet restart).";
+                    errorType = "arduino";
                     return new Point(0, 0);
                 }
                 else if (content == "NO_RESPONSE_FROM_LINUX")
                 {
-                    isPositionActual = false;
                     errorMessage = "Arduino kontrolér nedostává žádná data o poloze z python scriptu běžícím na Linuxového systému. Zkuste restartovat Arduino.";
+                    errorType = "arduino";
                     return new Point(0, 0);
                 }
                 else
@@ -174,20 +214,23 @@ namespace FactorySheduler
                     string[] positions = content.Split(',');
                     if (positions.Length == 2)
                     {
-                        isPositionActual = true;
-                        errorMessage = "";
+                        if (errorType == "arduino")
+                        {
+                            errorMessage = "";
+                            errorType = "";
+                        }
                         return new Point(Int32.Parse(positions[0]), Int32.Parse(positions[1]));
                     }
                     else {
-                        isPositionActual = false;
                         errorMessage = "Špatný formát příchozí zprávy o poloze z Arduino.";
+                        errorType = "arduino";
                         return new Point(0, 0);
                     }
                 }
             }
             else {
-                isPositionActual = false;
                 errorMessage = "Nelze se připojit k Arduino zařízení. Zkontrolujte, zda jste na stejné WiFi síti a zda je zařízení zapnuté. Případně ho restartujte.";
+                errorType = "arduino";
                 return new Point(0, 0);
             }
         }

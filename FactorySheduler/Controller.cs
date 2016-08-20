@@ -364,6 +364,7 @@ namespace FactorySheduler
                         {
                             cart.beaconAddress = address;
                             cart.startPeriodicScanOfPosition();
+                            cart.errorMessage = "";
                             b.ReportProgress(100);
                             break;
                         }
