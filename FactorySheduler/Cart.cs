@@ -317,7 +317,8 @@ namespace FactorySheduler
         /// </summary>
         public virtual void moveFront()
         {
-
+            RestRequest request = new RestRequest("arduino/drive/100", Method.GET);
+            client.Execute(request);
         }
 
         /// <summary>
@@ -325,7 +326,8 @@ namespace FactorySheduler
         /// </summary>
         public virtual void moveBack()
         {
-
+            RestRequest request = new RestRequest("arduino/drive/-100", Method.GET);
+            client.Execute(request);
         }
 
         /// <summary>
@@ -333,7 +335,8 @@ namespace FactorySheduler
         /// </summary>
         public virtual void turnLeft()
         {
-
+            RestRequest request = new RestRequest("arduino/raid/3", Method.GET);
+            client.Execute(request);
         }
 
         /// <summary>
@@ -341,7 +344,8 @@ namespace FactorySheduler
         /// </summary>
         public virtual void turnRight()
         {
-
+            RestRequest request = new RestRequest("arduino/raid/-3", Method.GET);
+            client.Execute(request);
         }
     }
 }
