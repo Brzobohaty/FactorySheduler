@@ -1,13 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Drawing;
-using System.Data;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Drawing.Drawing2D;
+using System.Collections;
 
 namespace FactorySheduler.Views
 {
@@ -20,6 +17,14 @@ namespace FactorySheduler.Views
         private Action buttonSearchNextDevicesCallback; //callback při kliknutí na tlačítko hledat další zařízení
         private Cart selectedCart; //právě vybraný vozík
         private Action<Cart> reinicializeCart; //callback při kliknutí na tlačítko reinicializace jednoho vozíku
+        private const int sizeOfStaticBeacon = 10; //´velikost statického majáku v pixelech
+        private List<Point> staticBeacons; //pozice statických majáků
+        //max a min souřadnice statických majáků
+        private int minStaticBeaconX = 99999999;
+        private int maxStaticBeaconX = 0;
+        private int minStaticBeaconY = 99999999;
+        private int maxStaticBeaconY = 0;
+        
 
         public MapView(Action buttonSearchNextDevicesCallback, Action<Cart> reinicializeCart)
         {
@@ -74,6 +79,62 @@ namespace FactorySheduler.Views
         public void setEnableRefreshButton(bool enabled) {
             buttonSearchNextDevices.Enabled = enabled;
             buttonReinicializeCart.Enabled = enabled;
+        }
+
+        /// <summary>
+        /// Nastaví do mapy statické majáky
+        /// </summary>
+        /// <param name="staticBeacons"></param>
+        public void setStaticBeaconsPoints(List<Point> staticBeacons) {
+            this.staticBeacons = staticBeacons;
+            foreach (Point beacon in staticBeacons)
+            {
+                if (beacon.X < minStaticBeaconX) {
+                    minStaticBeaconX = beacon.X;
+                }
+                if (beacon.X > maxStaticBeaconX)
+                {
+                    maxStaticBeaconX = beacon.X;
+                }
+                if (beacon.Y < minStaticBeaconY)
+                {
+                    minStaticBeaconY = beacon.Y;
+                }
+                if (beacon.Y > maxStaticBeaconY)
+                {
+                    maxStaticBeaconY = beacon.Y;
+                }
+            }
+            paintStaticBeacons();
+        }
+
+        /// <summary>
+        /// Vykreslí statické majáky
+        /// </summary>
+        private void paintStaticBeacons() {
+            foreach (Point beacon in staticBeacons)
+            {
+                paintStaticBeacon(beacon.X, beacon.Y);
+            }
+        }
+
+        /// <summary>
+        /// Vykreslí statický maják
+        /// </summary>
+        /// <param name="beaconX">x souřadnice majáku</param>
+        /// <param name="beaconY">y souřadnice majáku</param>
+        private void paintStaticBeacon(int beaconX,int beaconY) {
+            mapBox.Paint += new PaintEventHandler(
+                    delegate (object sender, PaintEventArgs e)
+                    {
+                        var g = e.Graphics;
+                        int x = MathLibrary.changeScale(beaconX, minStaticBeaconX, maxStaticBeaconX, 0, mapBox.Width);
+                        int y = MathLibrary.changeScale(beaconY, minStaticBeaconY, maxStaticBeaconY, mapBox.Height, 0);
+                        g.SmoothingMode = SmoothingMode.AntiAlias;
+                        Brush brush = new SolidBrush(Color.Black);
+                        g.FillEllipse(brush, new Rectangle(x-(sizeOfStaticBeacon/2), y- (sizeOfStaticBeacon / 2), sizeOfStaticBeacon, sizeOfStaticBeacon));
+                    }
+                );
         }
 
         /// <summary>

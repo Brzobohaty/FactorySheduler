@@ -240,7 +240,7 @@ namespace FactorySheduler
                     {
                         mainWindow.showMessage(MessageTypeEnum.progress, "Párování Arduino zařízení s ultrazvukovými majáky ...");
                         List<Point> staticBeaconsPositions = dashboard.getStaticBeaconsPositions();
-                        //TODO nastavit rozměry mapy podle souřadnic statickýh majáků 
+                        mapView.setStaticBeaconsPoints(staticBeaconsPositions);
                         pairArduinosWithBeacons();
                         return true;
                     }

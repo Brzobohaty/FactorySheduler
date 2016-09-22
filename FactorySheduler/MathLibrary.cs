@@ -126,18 +126,18 @@ namespace FactorySheduler
         /// <param name="newMin">minimum nového rozsahu</param>
         /// <param name="newMax">maximum nového rozsahu</param>
         /// <returns></returns>
-        //public static int changeScale(int oldValue, int oldMin, int oldMax, int newMin, int newMax)
-        //{
-        //    int oldRange = (oldMax - oldMin);
-        //    if (oldRange == 0)
-        //        return newMin;
-        //    else
-        //    {
-        //        int newRange = (newMax - newMin);
-        //        int newValue = (((oldValue - oldMin) * newRange) / oldRange) + newMin;
-        //        return newValue;
-        //    }
-        //}
+        public static int changeScale(int oldValue, int oldMin, int oldMax, int newMin, int newMax)
+        {
+            int oldRange = (oldMax - oldMin);
+            if (oldRange == 0)
+                return newMin;
+            else
+            {
+                int newRange = (newMax - newMin);
+                int newValue = (((oldValue - oldMin) * newRange) / oldRange) + newMin;
+                return newValue;
+            }
+        }
 
         /// <summary>
         /// Přepočítá hodnotu z jednoho číselného rozsahu do druhého logaritmického rozsahu
