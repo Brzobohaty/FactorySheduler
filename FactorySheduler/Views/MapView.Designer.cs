@@ -48,6 +48,7 @@
             this.mapBox = new System.Windows.Forms.PictureBox();
             this.timerRefresh = new System.Windows.Forms.Timer(this.components);
             this.buttonSearchNextDevices = new System.Windows.Forms.Button();
+            this.buttonReinicializeStaticBeacons = new System.Windows.Forms.Button();
             this.panel1.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
@@ -266,10 +267,23 @@
             this.buttonSearchNextDevices.UseVisualStyleBackColor = true;
             this.buttonSearchNextDevices.Click += new System.EventHandler(this.buttonSearchNextDevices_Click);
             // 
+            // buttonReinicializeStaticBeacons
+            // 
+            this.buttonReinicializeStaticBeacons.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.buttonReinicializeStaticBeacons.AutoSize = true;
+            this.buttonReinicializeStaticBeacons.Location = new System.Drawing.Point(535, 11);
+            this.buttonReinicializeStaticBeacons.Name = "buttonReinicializeStaticBeacons";
+            this.buttonReinicializeStaticBeacons.Size = new System.Drawing.Size(219, 27);
+            this.buttonReinicializeStaticBeacons.TabIndex = 13;
+            this.buttonReinicializeStaticBeacons.Text = "Reinicializace statickcýh majáků";
+            this.buttonReinicializeStaticBeacons.UseVisualStyleBackColor = true;
+            this.buttonReinicializeStaticBeacons.Click += new System.EventHandler(this.buttonReinicializeStaticBeacons_Click);
+            // 
             // MapView
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.Controls.Add(this.buttonReinicializeStaticBeacons);
             this.Controls.Add(this.buttonSearchNextDevices);
             this.Controls.Add(this.splitContainer1);
             this.Controls.Add(this.buttonsLayout);
@@ -307,5 +321,6 @@
         private System.Windows.Forms.Button buttonFront;
         private System.Windows.Forms.Button button8;
         private System.Windows.Forms.Button buttonRight;
+        private System.Windows.Forms.Button buttonReinicializeStaticBeacons;
     }
 }

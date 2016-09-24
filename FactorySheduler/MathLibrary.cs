@@ -126,15 +126,15 @@ namespace FactorySheduler
         /// <param name="newMin">minimum nového rozsahu</param>
         /// <param name="newMax">maximum nového rozsahu</param>
         /// <returns></returns>
-        public static int changeScale(int oldValue, int oldMin, int oldMax, int newMin, int newMax)
+        public static double changeScale(double oldValue, double oldMin, double oldMax, double newMin, double newMax)
         {
-            int oldRange = (oldMax - oldMin);
+            double oldRange = (oldMax - oldMin);
             if (oldRange == 0)
                 return newMin;
             else
             {
-                int newRange = (newMax - newMin);
-                int newValue = (((oldValue - oldMin) * newRange) / oldRange) + newMin;
+                double newRange = (newMax - newMin);
+                double newValue = (((oldValue - oldMin) * newRange) / oldRange) + newMin;
                 return newValue;
             }
         }

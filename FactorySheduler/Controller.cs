@@ -172,12 +172,23 @@ namespace FactorySheduler
         private void nextStepAfterNetworkScan()
         {
             mainWindow.setProgress(0);
-            mapView = new MapView(searchNextDevices, reinicializeCart);
+            mapView = new MapView(searchNextDevices, reinicializeStaticBeacons, reinicializeCart);
             mainWindow.setView(mapView);
             mapView.addCarts(carts.Values.ToList());
             if (!connectToDashBoardAndStaticBeacons())
             {
                 startPeriodicScanOfDashboardConnection();
+            }
+        }
+
+        /// <summary>
+        /// Reinicializuje a statické majáky
+        /// </summary>
+        private void reinicializeStaticBeacons() {
+            if (checkConnectionToStaticBeacons())
+            {
+                List<Point> staticBeaconsPositions = dashboard.getStaticBeaconsPositions();
+                mapView.setStaticBeaconsPoints(staticBeaconsPositions);
             }
         }
 
@@ -260,6 +271,8 @@ namespace FactorySheduler
                 return false;
             }
         }
+
+
 
         /// <summary>
         /// Spáruje adresy nalezených majáků s Arduino zařízením
