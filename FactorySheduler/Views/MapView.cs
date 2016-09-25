@@ -294,5 +294,11 @@ namespace FactorySheduler.Views
         {
             buttonReinicializeStaticBeaconsCallback();
         }
+
+        private void propertyGrid_PropertyValueChanged(object s, PropertyValueChangedEventArgs e)
+        {
+            String propertyName = e.ChangedItem.PropertyDescriptor.Name;
+            selectedCart.propertyChanged(propertyName);
+        }
     }
 }

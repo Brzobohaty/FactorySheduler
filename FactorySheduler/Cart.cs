@@ -81,6 +81,50 @@ namespace FactorySheduler
             errorMessage = "";
         }
 
+        private void setPropertiesFromEEPROM()
+        {
+            RestRequest request = new RestRequest("arduino/readEEPROM/name", Method.GET);
+            request.Timeout = 3000;
+            IRestResponse response = client.Execute(request);
+            HttpStatusCode status = response.StatusCode;
+            if (status == HttpStatusCode.OK)
+            {
+                string content = response.Content.Trim();
+                if (content != "NOT SET")
+                {
+                    name = content;
+                }
+            }
+            request = new RestRequest("arduino/readEEPROM/alias", Method.GET);
+            request.Timeout = 3000;
+            response = client.Execute(request);
+            status = response.StatusCode;
+            if (status == HttpStatusCode.OK)
+            {
+                string content = response.Content.Trim();
+                if (content != "NOT SET")
+                {
+                    alias = content;
+                }
+            }
+            request = new RestRequest("arduino/readEEPROM/distances", Method.GET);
+            request.Timeout = 3000;
+            response = client.Execute(request);
+            status = response.StatusCode;
+            if (status == HttpStatusCode.OK)
+            {
+                string content = response.Content.Trim();
+                if (content != "NOT SET")
+                {
+                    string[] contentArray = content.Split(',');
+                    distanceFromHedghogToBackOfCart = int.Parse(contentArray[0]);
+                    distanceFromHedghogToFrontOfCart = int.Parse(contentArray[1]);
+                    distanceFromHedghogToLeftSideOfCart = int.Parse(contentArray[2]);
+                    distanceFromHedghogToRightSideOfCart = int.Parse(contentArray[3]);
+                }
+            }
+        }
+
         /// <summary>
         /// Zkontroluje, zda se opravdu jedná o arduino a zda se na něj lze připojit a že je nastavené REST API
         /// </summary>
@@ -99,6 +143,7 @@ namespace FactorySheduler
             {
                 if (response.Content.Trim() == "NVC8mK73kAoXzLAYxFMo")
                 {
+                    setPropertiesFromEEPROM();
                     return true;
                 }
                 else {
@@ -345,6 +390,22 @@ namespace FactorySheduler
         public virtual void turnRight()
         {
             RestRequest request = new RestRequest("arduino/raid/-3", Method.GET);
+            client.Execute(request);
+        }
+
+        /// <summary>
+        /// Při změně hodnoty proměnné uloží hodnotu do EEPROM vozíku
+        /// </summary>
+        /// <param name="propertyName">název proměnné</param>
+        public virtual void propertyChanged(string propertyName) {
+            RestRequest request;
+            if (propertyName == "distanceFromHedghogToBackOfCart" || propertyName == "distanceFromHedghogToFrontOfCart" || propertyName == "distanceFromHedghogToLeftSideOfCart" || propertyName == "distanceFromHedghogToRightSideOfCart")
+            {
+                request = new RestRequest("arduino/writeEEPROM/distances/" + distanceFromHedghogToBackOfCart + "/" + distanceFromHedghogToFrontOfCart + "/" + distanceFromHedghogToLeftSideOfCart + "/" + distanceFromHedghogToRightSideOfCart, Method.GET);
+            }
+            else {
+                request = new RestRequest("arduino/writeEEPROM/" + propertyName + "/" + this.GetType().GetProperty(propertyName).GetValue(this, null), Method.GET);
+            }
             client.Execute(request);
         }
     }

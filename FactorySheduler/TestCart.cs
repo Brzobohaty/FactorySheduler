@@ -78,5 +78,13 @@ namespace FactorySheduler
         {
             testPosition.X += 15;
         }
+
+        /// <summary>
+        /// Při změně hodnoty proměnné uloží hodnotu do EEPROM vozíku
+        /// </summary>
+        /// <param name="propertyName">název proměnné</param>
+        public override void propertyChanged(string propertyName)
+        {
+        }
     }
 }
