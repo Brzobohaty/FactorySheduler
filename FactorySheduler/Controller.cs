@@ -19,6 +19,7 @@ namespace FactorySheduler
         private int needCheckCount = 0; //Příznak, kolik zařízení v síti ještě potřebuje zkontrolovat
         private Dashboard dashboard = new Dashboard(); //Objekt představující připojení k Dashboard aplikaci
         private MapView mapView; //View pro zobrazení mapy zařízení 
+        private EditMapView editMapView; //View pro editaci mapy
         private System.Windows.Forms.Timer periodicCheckerOfDashboardConnection = new System.Windows.Forms.Timer(); //periodický kontroler připojení k aplikaci dashboard (v případě selhání připojení)
         private const bool test = true; //proměnná, která indikuje, že se má v případě selhání připojit simulační wifi síť se simulačními vozíky
 
@@ -28,6 +29,7 @@ namespace FactorySheduler
             this.mainWindow = mainWindow;
             networkScannerView = NetworkScanView.getInstance();
             mainWindow.subscribeWindowShownObserver(inicialize);
+            ChooseDeviceForPointDetectView.getInstance().setChooseCallback(deviceForDetectPointWasSelected);
         }
 
         /// <summary>
@@ -172,13 +174,27 @@ namespace FactorySheduler
         private void nextStepAfterNetworkScan()
         {
             mainWindow.setProgress(0);
-            mapView = new MapView(searchNextDevices, reinicializeStaticBeacons, reinicializeCart);
+            mapView = new MapView(searchNextDevices, reinicializeStaticBeacons, reinicializeCart, editMap);
+            editMapView = new EditMapView(finishEditingMap, showChooseDeviceForPointDetectView);
             mainWindow.setView(mapView);
             mapView.addCarts(carts.Values.ToList());
             if (!connectToDashBoardAndStaticBeacons())
             {
                 startPeriodicScanOfDashboardConnection();
             }
+        }
+
+        private void showChooseDeviceForPointDetectView() {
+            ChooseDeviceForPointDetectView dialog = ChooseDeviceForPointDetectView.getInstance();
+            dialog.setDevices(carts.Values.ToList());
+            dialog.ShowDialog();
+        }
+
+        /// <summary>
+        /// Dokončení editace mapy
+        /// </summary>
+        private void finishEditingMap() {
+            mainWindow.setView(mapView);
         }
 
         /// <summary>
@@ -189,6 +205,7 @@ namespace FactorySheduler
             {
                 List<Point> staticBeaconsPositions = dashboard.getStaticBeaconsPositions();
                 mapView.setStaticBeaconsPoints(staticBeaconsPositions);
+                editMapView.setStaticBeaconsPoints(staticBeaconsPositions);
             }
         }
 
@@ -212,6 +229,13 @@ namespace FactorySheduler
             {
                 startPeriodicScanOfDashboardConnection();
             }
+        }
+
+        /// <summary>
+        /// Spustí okno pro editaci mapy
+        /// </summary>
+        private void editMap() {
+            mainWindow.setView(editMapView);
         }
 
         /// <summary>
@@ -252,6 +276,7 @@ namespace FactorySheduler
                         mainWindow.showMessage(MessageTypeEnum.progress, "Párování Arduino zařízení s ultrazvukovými majáky ...");
                         List<Point> staticBeaconsPositions = dashboard.getStaticBeaconsPositions();
                         mapView.setStaticBeaconsPoints(staticBeaconsPositions);
+                        editMapView.setStaticBeaconsPoints(staticBeaconsPositions);
                         pairArduinosWithBeacons();
                         return true;
                     }
@@ -447,6 +472,14 @@ namespace FactorySheduler
                 mainWindow.showMessage(MessageTypeEnum.error, "Nepodařilo se získat informace ze statických majáků s adresou: " + adressString);
             }
             return ok;
+        }
+
+        /// <summary>
+        /// Bzlo vzbráno zařízení pro detekci bodů na mapě
+        /// </summary>
+        /// <param name="device">zařízení</param>
+        private void deviceForDetectPointWasSelected(Cart device) {
+            //TODO
         }
     }
 }

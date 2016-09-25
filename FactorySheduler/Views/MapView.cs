@@ -16,6 +16,7 @@ namespace FactorySheduler.Views
         private List<Cart> carts; //vozíky
         private Action buttonSearchNextDevicesCallback; //callback při kliknutí na tlačítko hledat další zařízení
         private Action buttonReinicializeStaticBeaconsCallback; //callback při kliknutí na tlačítko pro reinicializaci statických majáků
+        private Action buttonEditMapCallback; //callback při klinutí natalčítko pro editaci mapy
         private Cart selectedCart; //právě vybraný vozík
         private Action<Cart> reinicializeCart; //callback při kliknutí na tlačítko reinicializace jednoho vozíku
         private const int sizeOfStaticBeacon = 10; //´velikost statického majáku v pixelech
@@ -25,10 +26,11 @@ namespace FactorySheduler.Views
         private int maxStaticBeaconValue = 0;
         
 
-        public MapView(Action buttonSearchNextDevicesCallback, Action buttonReinicializeStaticBeaconsCallback, Action<Cart> reinicializeCart)
+        public MapView(Action buttonSearchNextDevicesCallback, Action buttonReinicializeStaticBeaconsCallback, Action<Cart> reinicializeCart, Action buttonEditMapCallback)
         {
             this.buttonSearchNextDevicesCallback = buttonSearchNextDevicesCallback;
             this.buttonReinicializeStaticBeaconsCallback = buttonReinicializeStaticBeaconsCallback;
+            this.buttonEditMapCallback = buttonEditMapCallback;
             this.reinicializeCart = reinicializeCart;
             InitializeComponent();
         }
@@ -119,14 +121,13 @@ namespace FactorySheduler.Views
                     {
                         var g = e.Graphics;
                         g.SmoothingMode = SmoothingMode.AntiAlias;
-                        Brush brush = new SolidBrush(Color.Black);
+                        Brush brush = new SolidBrush(Color.Green);
                         foreach (Point beacon in staticBeacons)
                         {
                             int x = (int)Math.Round(getRescaledValue(beacon.X, false, false));
                             int y = (int)Math.Round(getRescaledValue(beacon.Y, true, false));
                             g.FillEllipse(brush, new Rectangle(x - (sizeOfStaticBeacon / 2), y - (sizeOfStaticBeacon / 2), sizeOfStaticBeacon, sizeOfStaticBeacon));
                         }
-                        
                     }
                 );
         }
@@ -299,6 +300,11 @@ namespace FactorySheduler.Views
         {
             String propertyName = e.ChangedItem.PropertyDescriptor.Name;
             selectedCart.propertyChanged(propertyName);
+        }
+
+        private void buttonEditMap_Click(object sender, EventArgs e)
+        {
+            buttonEditMapCallback();
         }
     }
 }

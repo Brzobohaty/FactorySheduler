@@ -49,6 +49,7 @@
             this.timerRefresh = new System.Windows.Forms.Timer(this.components);
             this.buttonSearchNextDevices = new System.Windows.Forms.Button();
             this.buttonReinicializeStaticBeacons = new System.Windows.Forms.Button();
+            this.buttonEditMap = new System.Windows.Forms.Button();
             this.panel1.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
@@ -244,6 +245,7 @@
             // 
             // mapBox
             // 
+            this.mapBox.BackColor = System.Drawing.Color.LightSteelBlue;
             this.mapBox.Dock = System.Windows.Forms.DockStyle.Fill;
             this.mapBox.Location = new System.Drawing.Point(0, 0);
             this.mapBox.Name = "mapBox";
@@ -280,10 +282,23 @@
             this.buttonReinicializeStaticBeacons.UseVisualStyleBackColor = true;
             this.buttonReinicializeStaticBeacons.Click += new System.EventHandler(this.buttonReinicializeStaticBeacons_Click);
             // 
+            // buttonEditMap
+            // 
+            this.buttonEditMap.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.buttonEditMap.AutoSize = true;
+            this.buttonEditMap.Location = new System.Drawing.Point(310, 11);
+            this.buttonEditMap.Name = "buttonEditMap";
+            this.buttonEditMap.Size = new System.Drawing.Size(219, 27);
+            this.buttonEditMap.TabIndex = 14;
+            this.buttonEditMap.Text = "Návrh mapy";
+            this.buttonEditMap.UseVisualStyleBackColor = true;
+            this.buttonEditMap.Click += new System.EventHandler(this.buttonEditMap_Click);
+            // 
             // MapView
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.Controls.Add(this.buttonEditMap);
             this.Controls.Add(this.buttonReinicializeStaticBeacons);
             this.Controls.Add(this.buttonSearchNextDevices);
             this.Controls.Add(this.splitContainer1);
@@ -323,5 +338,6 @@
         private System.Windows.Forms.Button button8;
         private System.Windows.Forms.Button buttonRight;
         private System.Windows.Forms.Button buttonReinicializeStaticBeacons;
+        private System.Windows.Forms.Button buttonEditMap;
     }
 }

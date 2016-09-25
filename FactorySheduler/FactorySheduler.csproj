@@ -71,6 +71,12 @@
     <Compile Include="Views\MainWindow.Designer.cs">
       <DependentUpon>MainWindow.cs</DependentUpon>
     </Compile>
+    <Compile Include="Views\EditMapView.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Views\EditMapView.Designer.cs">
+      <DependentUpon>EditMapView.cs</DependentUpon>
+    </Compile>
     <Compile Include="Views\NetworkScanView.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -82,6 +88,12 @@
     </Compile>
     <Compile Include="Views\MapView.Designer.cs">
       <DependentUpon>MapView.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\ChooseDeviceForPointDetectView.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Views\ChooseDeviceForPointDetectView.Designer.cs">
+      <DependentUpon>ChooseDeviceForPointDetectView.cs</DependentUpon>
     </Compile>
     <Compile Include="Views\SettingsStaticBeacons.cs">
       <SubType>Form</SubType>
@@ -101,11 +113,17 @@
     <EmbeddedResource Include="Views\MainWindow.resx">
       <DependentUpon>MainWindow.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Views\EditMapView.resx">
+      <DependentUpon>EditMapView.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Views\NetworkScanView.resx">
       <DependentUpon>NetworkScanView.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Views\MapView.resx">
       <DependentUpon>MapView.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\ChooseDeviceForPointDetectView.resx">
+      <DependentUpon>ChooseDeviceForPointDetectView.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Views\SettingsStaticBeacons.resx">
       <DependentUpon>SettingsStaticBeacons.cs</DependentUpon>
