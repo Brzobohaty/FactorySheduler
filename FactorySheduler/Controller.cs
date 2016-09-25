@@ -353,6 +353,8 @@ namespace FactorySheduler
         /// <param name="cart">vozík</param>
         private void reinicializeCart(Cart cart)
         {
+            mainWindow.setProgress(0);
+            mainWindow.showMessage(MessageTypeEnum.progress, "Reinicializace zařízení...");
             BackgroundWorker bw = new BackgroundWorker();
             bw.WorkerReportsProgress = true;
 
