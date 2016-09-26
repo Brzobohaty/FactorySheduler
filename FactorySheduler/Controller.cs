@@ -21,7 +21,10 @@ namespace FactorySheduler
         private MapView mapView; //View pro zobrazení mapy zařízení 
         private EditMapView editMapView; //View pro editaci mapy
         private System.Windows.Forms.Timer periodicCheckerOfDashboardConnection = new System.Windows.Forms.Timer(); //periodický kontroler připojení k aplikaci dashboard (v případě selhání připojení)
+        private System.Windows.Forms.Timer periodicCheckerOfMapPoints = new System.Windows.Forms.Timer(); //periodický kontroler naměřených bodů na mapě (v případě měření nových bodů mapy)
         private const bool test = true; //proměnná, která indikuje, že se má v případě selhání připojit simulační wifi síť se simulačními vozíky
+        private List<Point> mapPoints; //body na mapě
+        private Cart mapPointCheckerDevice; //Zařízení s kterým se detekují bdy na mapě
 
         /// <param name="mainWindow">hlavní okno aplikace</param>
         public Controller(MainWindow mainWindow)
@@ -194,6 +197,9 @@ namespace FactorySheduler
         /// Dokončení editace mapy
         /// </summary>
         private void finishEditingMap() {
+            if (periodicCheckerOfMapPoints != null) {
+                periodicCheckerOfMapPoints.Dispose();
+            }
             mainWindow.setView(mapView);
         }
 
@@ -256,6 +262,24 @@ namespace FactorySheduler
                 {
                     periodicCheckerOfDashboardConnection.Dispose();
                 }
+            };
+        }
+
+        /// <summary>
+        /// Započne periodické kontrolování bodů na mapě
+        /// </summary>
+        private void startPeriodicScanOfMapPoints()
+        {
+            if (periodicCheckerOfMapPoints.Enabled)
+            {
+                return;
+            }
+            periodicCheckerOfMapPoints = new System.Windows.Forms.Timer();
+            periodicCheckerOfMapPoints.Interval = 3000;
+            periodicCheckerOfMapPoints.Enabled = true;
+            periodicCheckerOfMapPoints.Tick += delegate
+            {
+                readMapPoint();
             };
         }
 
@@ -475,11 +499,20 @@ namespace FactorySheduler
         }
 
         /// <summary>
-        /// Bzlo vzbráno zařízení pro detekci bodů na mapě
+        /// Bylo vzbráno zařízení pro detekci bodů na mapě
         /// </summary>
         /// <param name="device">zařízení</param>
         private void deviceForDetectPointWasSelected(Cart device) {
-            //TODO
+            mapPointCheckerDevice = device;
+        }
+
+        /// <summary>
+        /// Přečte ze zařízení poslední naměřený bod na mapě
+        /// </summary>
+        private void readMapPoint() {
+            //TODO má se brát z arduina ne z majáku
+            mapPoints.Add(mapPointCheckerDevice.position);
+            editMapView.setMapPoints(mapPoints);
         }
     }
 }

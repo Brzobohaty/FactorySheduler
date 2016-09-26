@@ -17,15 +17,27 @@ namespace FactorySheduler.Views
         private Action buttonDetectPointsCallback; //callback při kliknutí na tlačítko detekce bodů
         private const int sizeOfStaticBeacon = 10; //´velikost statického majáku v pixelech
         private List<Point> staticBeacons; //pozice statických majáků
+        private List<Point> mapPoints; //Body na mapě
         //max a min souřadnice statických majáků
         private int minStaticBeaconValue = 99999999;
         private int maxStaticBeaconValue = 0;
+        
 
         public EditMapView(Action buttonFinishCallback, Action buttonDetectPointsCallback)
         {
             this.buttonFinishCallback = buttonFinishCallback;
             this.buttonDetectPointsCallback = buttonDetectPointsCallback;
             InitializeComponent();
+        }
+
+        /// <summary>
+        /// Nastaví naměřené body na mapě
+        /// </summary>
+        /// <param name="mapPoints">Naměřené body</param>
+        public void setMapPoints(List<Point> mapPoints)
+        {
+            this.mapPoints = mapPoints;
+            paintMapPoints();
         }
 
         /// <summary>
@@ -71,6 +83,27 @@ namespace FactorySheduler.Views
                         {
                             int x = (int)Math.Round(getRescaledValue(beacon.X, false, false));
                             int y = (int)Math.Round(getRescaledValue(beacon.Y, true, false));
+                            g.FillEllipse(brush, new Rectangle(x - (sizeOfStaticBeacon / 2), y - (sizeOfStaticBeacon / 2), sizeOfStaticBeacon, sizeOfStaticBeacon));
+                        }
+                    }
+                );
+        }
+
+        /// <summary>
+        /// Vykreslí body na mapě
+        /// </summary>
+        private void paintMapPoints()
+        {
+            mapBox.Paint += new PaintEventHandler(
+                    delegate (object sender, PaintEventArgs e)
+                    {
+                        var g = e.Graphics;
+                        g.SmoothingMode = SmoothingMode.AntiAlias;
+                        Brush brush = new SolidBrush(Color.Black);
+                        foreach (Point point in mapPoints)
+                        {
+                            int x = (int)Math.Round(getRescaledValue(point.X, false, false));
+                            int y = (int)Math.Round(getRescaledValue(point.Y, true, false));
                             g.FillEllipse(brush, new Rectangle(x - (sizeOfStaticBeacon / 2), y - (sizeOfStaticBeacon / 2), sizeOfStaticBeacon, sizeOfStaticBeacon));
                         }
                     }
