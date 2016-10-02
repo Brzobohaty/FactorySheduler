@@ -281,6 +281,37 @@ namespace FactorySheduler
         }
 
         /// <summary>
+        /// Načte naposledy zaznamenaný bod z arduino při stisku tlačítka
+        /// </summary>
+        /// <returns>Point(0,0), pokud nebyl zaznamenán nový bod</returns>
+        public virtual Point getMapPoint()
+        {
+            RestRequest request = new RestRequest("arduino/read-map-point/", Method.GET);
+
+            IRestResponse response = client.Execute(request);
+            HttpStatusCode status = response.StatusCode;
+            if (status == HttpStatusCode.OK)
+            {
+                string content = response.Content.Trim();
+                if (content != "NO_SET")
+                {
+                    string[] positions = content.Split(',');
+                    int x = Int32.Parse(positions[0]);
+                    int y = Int32.Parse(positions[1]);
+                    return new Point(x, y);
+                }
+                else {
+                    return new Point(0, 0);
+                }
+            }
+            else {
+                errorMessage = "Nelze se připojit k Arduino zařízení. Zkontrolujte, zda jste na stejné WiFi síti a zda je zařízení zapnuté. Případně ho restartujte.";
+                errorType = "arduino";
+                return new Point(0, 0);
+            }
+        }
+
+        /// <summary>
         /// Posune pozici tak, aby odpovídala prostředku vozíku.
         /// </summary>
         /// <returns>pozici uprostřed vozíku</returns>

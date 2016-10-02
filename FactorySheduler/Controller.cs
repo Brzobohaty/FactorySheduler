@@ -23,7 +23,7 @@ namespace FactorySheduler
         private System.Windows.Forms.Timer periodicCheckerOfDashboardConnection = new System.Windows.Forms.Timer(); //periodický kontroler připojení k aplikaci dashboard (v případě selhání připojení)
         private System.Windows.Forms.Timer periodicCheckerOfMapPoints = new System.Windows.Forms.Timer(); //periodický kontroler naměřených bodů na mapě (v případě měření nových bodů mapy)
         private const bool test = true; //proměnná, která indikuje, že se má v případě selhání připojit simulační wifi síť se simulačními vozíky
-        private List<Point> mapPoints; //body na mapě
+        private List<Point> mapPoints = new List<Point>(); //body na mapě
         private Cart mapPointCheckerDevice; //Zařízení s kterým se detekují bdy na mapě
 
         /// <param name="mainWindow">hlavní okno aplikace</param>
@@ -275,7 +275,7 @@ namespace FactorySheduler
                 return;
             }
             periodicCheckerOfMapPoints = new System.Windows.Forms.Timer();
-            periodicCheckerOfMapPoints.Interval = 3000;
+            periodicCheckerOfMapPoints.Interval = 1000;
             periodicCheckerOfMapPoints.Enabled = true;
             periodicCheckerOfMapPoints.Tick += delegate
             {
@@ -341,8 +341,7 @@ namespace FactorySheduler
                 {
                     int addresss = int.Parse(address);
                     Point positionFromDashboard = dashboard.getDevicePosition(addresss);
-                    int cartsCount = cartsList.Count();
-                    for (int j = 0; j < cartsCount; j++)
+                    for (int j = 0; j < cartsList.Count(); j++)
                     {
                         Cart cart = cartsList[j];
                         Point positionFromArduino = cart.getPositionFromArduino();
@@ -504,14 +503,18 @@ namespace FactorySheduler
         /// <param name="device">zařízení</param>
         private void deviceForDetectPointWasSelected(Cart device) {
             mapPointCheckerDevice = device;
+            editMapView.setDetectingDevice(device);
+            startPeriodicScanOfMapPoints();
         }
 
         /// <summary>
         /// Přečte ze zařízení poslední naměřený bod na mapě
         /// </summary>
         private void readMapPoint() {
-            //TODO má se brát z arduina ne z majáku
-            mapPoints.Add(mapPointCheckerDevice.position);
+            Point point = mapPointCheckerDevice.getMapPoint();
+            if (point.X != 0 && point.Y != 0) {
+                mapPoints.Add(point);
+            }
             editMapView.setMapPoints(mapPoints);
         }
     }

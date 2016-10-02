@@ -18,10 +18,11 @@ namespace FactorySheduler.Views
         private const int sizeOfStaticBeacon = 10; //´velikost statického majáku v pixelech
         private List<Point> staticBeacons; //pozice statických majáků
         private List<Point> mapPoints; //Body na mapě
+        private Cart detectingDevice; //zařízení, které detekuje body na mapě
         //max a min souřadnice statických majáků
         private int minStaticBeaconValue = 99999999;
         private int maxStaticBeaconValue = 0;
-        
+
 
         public EditMapView(Action buttonFinishCallback, Action buttonDetectPointsCallback)
         {
@@ -44,13 +45,15 @@ namespace FactorySheduler.Views
         /// Nastaví do mapy statické majáky
         /// </summary>
         /// <param name="staticBeacons"></param>
-        public void setStaticBeaconsPoints(List<Point> staticBeacons) {
+        public void setStaticBeaconsPoints(List<Point> staticBeacons)
+        {
             minStaticBeaconValue = 99999999;
             maxStaticBeaconValue = 0;
             this.staticBeacons = staticBeacons;
             foreach (Point beacon in staticBeacons)
             {
-                if (beacon.X < minStaticBeaconValue) {
+                if (beacon.X < minStaticBeaconValue)
+                {
                     minStaticBeaconValue = beacon.X;
                 }
                 if (beacon.X > maxStaticBeaconValue)
@@ -70,9 +73,21 @@ namespace FactorySheduler.Views
         }
 
         /// <summary>
+        /// Nastavení zařízení, s kterým bude docházet k detekování bodů
+        /// </summary>
+        /// <param name="device">zařízení</param>
+        public void setDetectingDevice(Cart device)
+        {
+            detectingDevice = device;
+            paintPositionOfDevice();
+            startPeriodicRefresh();
+        }
+
+        /// <summary>
         /// Vykreslí statické majáky
         /// </summary>
-        private void paintStaticBeacons() {
+        private void paintStaticBeacons()
+        {
             mapBox.Paint += new PaintEventHandler(
                     delegate (object sender, PaintEventArgs e)
                     {
@@ -85,6 +100,24 @@ namespace FactorySheduler.Views
                             int y = (int)Math.Round(getRescaledValue(beacon.Y, true, false));
                             g.FillEllipse(brush, new Rectangle(x - (sizeOfStaticBeacon / 2), y - (sizeOfStaticBeacon / 2), sizeOfStaticBeacon, sizeOfStaticBeacon));
                         }
+                    }
+                );
+        }
+
+        /// <summary>
+        /// Vykreslí aktuální pozici zařízení pro detekování bodů na mapě
+        /// </summary>
+        private void paintPositionOfDevice()
+        {
+            mapBox.Paint += new PaintEventHandler(
+                    delegate (object sender, PaintEventArgs e)
+                    {
+                        var g = e.Graphics;
+                        g.SmoothingMode = SmoothingMode.AntiAlias;
+                        Brush brush = new SolidBrush(Color.Gold);
+                        int x = (int)Math.Round(getRescaledValue(detectingDevice.position.X, false, false));
+                        int y = (int)Math.Round(getRescaledValue(detectingDevice.position.Y, true, false));
+                        g.FillEllipse(brush, new Rectangle(x - (sizeOfStaticBeacon / 2), y - (sizeOfStaticBeacon / 2), sizeOfStaticBeacon, sizeOfStaticBeacon));
                     }
                 );
         }
@@ -116,7 +149,8 @@ namespace FactorySheduler.Views
         /// <param name="value">hodnota, kterou chceme přeškálovat</param>
         /// <param name="reversed">zda se má hodnota přeškálovat reverzně, tedy zda se má brát škála odzadu</param>
         /// <returns>přeškílovaná hodnota</returns>
-        private double getRescaledValue(double value, bool reversed, bool normalized) {
+        private double getRescaledValue(double value, bool reversed, bool normalized)
+        {
             double min = minStaticBeaconValue;
             double max = maxStaticBeaconValue;
             if (normalized)
@@ -125,7 +159,8 @@ namespace FactorySheduler.Views
                 max -= min;
             }
 
-            if (reversed) {
+            if (reversed)
+            {
                 return MathLibrary.changeScale(value, max, min, 0, mapBox.Height);
             }
             else {
@@ -136,39 +171,25 @@ namespace FactorySheduler.Views
         /// <summary>
         /// Započne periodické obnovování všech potřebných komponent
         /// </summary>
-        //public void startPeriodicRefresh()
-        //{
-        //    timerRefresh.Enabled = true;
-        //}
+        public void startPeriodicRefresh()
+        {
+            timerRefresh.Enabled = true;
+        }
 
         /// <summary>
         /// Všechno co se má v čase aktualzovat bude aktualizováno
         /// </summary>
-        //private void refreshAll() {
-        //    if (!propertyGrid.ContainsFocus) {
-        //        propertyGrid.Refresh();
-        //    }
-        //    for (int j = 0; j < carts.Count(); j++)
-        //    {
-        //        Cart cart = carts[j];
-        //        cart.asociatedButton.Text = cart.name + "\n" + cart.alias;
-        //        if (cart.errorMessage == "")
-        //        {
-        //            cart.asociatedButton.BackColor = Color.Green;
-        //        }
-        //        else {
-        //            cart.asociatedButton.BackColor = Color.Red;
-        //        }
-        //    }
-        //    mapBox.Refresh();
-        //}
+        private void refreshAll()
+        {
+            mapBox.Refresh();
+        }
 
         /// <summary>
         /// Jeden cyklus timeru
         /// </summary>
         private void timerRefresh_Tick(object sender, EventArgs e)
         {
-            //refreshAll();
+            refreshAll();
         }
 
         private void buttonFinish_Click(object sender, EventArgs e)
