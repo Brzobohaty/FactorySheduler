@@ -281,12 +281,13 @@ namespace FactorySheduler
         }
 
         /// <summary>
-        /// Načte naposledy zaznamenaný bod z arduino při stisku tlačítka
+        /// Načte naposledy zaznamenané body z arduino při stisku tlačítka
         /// </summary>
-        /// <returns>Point(0,0), pokud nebyl zaznamenán nový bod</returns>
-        public virtual Point getMapPoint()
+        /// <returns>List zaznamenanných bodů</returns>
+        public virtual List<Point> getMapPoints()
         {
-            RestRequest request = new RestRequest("arduino/read-map-point/", Method.GET);
+            RestRequest request = new RestRequest("arduino/read-map-points/", Method.GET);
+            List<Point> listOfPositions = new List<Point>();
 
             IRestResponse response = client.Execute(request);
             HttpStatusCode status = response.StatusCode;
@@ -295,19 +296,23 @@ namespace FactorySheduler
                 string content = response.Content.Trim();
                 if (content != "NO_SET")
                 {
-                    string[] positions = content.Split(',');
-                    int x = Int32.Parse(positions[0]);
-                    int y = Int32.Parse(positions[1]);
-                    return new Point(x, y);
+                    string[] positions = content.Split(';');
+                    for (int i=0; i< positions.Length; i++) {
+                        string[] xy = positions[i].Split(',');
+                        int x = Int32.Parse(xy[0]);
+                        int y = Int32.Parse(xy[1]);
+                        listOfPositions.Add(new Point(x, y));
+                    }
+                    return listOfPositions;
                 }
                 else {
-                    return new Point(0, 0);
+                    return listOfPositions;
                 }
             }
             else {
                 errorMessage = "Nelze se připojit k Arduino zařízení. Zkontrolujte, zda jste na stejné WiFi síti a zda je zařízení zapnuté. Případně ho restartujte.";
                 errorType = "arduino";
-                return new Point(0, 0);
+                return listOfPositions;
             }
         }
 

@@ -15,6 +15,7 @@ namespace FactorySheduler.Views
     {
         private Action buttonFinishCallback; //callback při kliknutí na tlačítko dokončení editace
         private Action buttonDetectPointsCallback; //callback při kliknutí na tlačítko detekce bodů
+        private Action changeDeviceForDetectingPointOnMap; //callback při kliknutí na talčítko změny detekovacího zařízení
         private const int sizeOfStaticBeacon = 10; //´velikost statického majáku v pixelech
         private List<Point> staticBeacons; //pozice statických majáků
         private List<Point> mapPoints; //Body na mapě
@@ -24,8 +25,9 @@ namespace FactorySheduler.Views
         private int maxStaticBeaconValue = 0;
 
 
-        public EditMapView(Action buttonFinishCallback, Action buttonDetectPointsCallback)
+        public EditMapView(Action buttonFinishCallback, Action buttonDetectPointsCallback, Action changeDeviceForDetectingPointOnMap)
         {
+            this.changeDeviceForDetectingPointOnMap = changeDeviceForDetectingPointOnMap;
             this.buttonFinishCallback = buttonFinishCallback;
             this.buttonDetectPointsCallback = buttonDetectPointsCallback;
             InitializeComponent();
@@ -200,6 +202,11 @@ namespace FactorySheduler.Views
         private void buttonDetectPoints_Click(object sender, EventArgs e)
         {
             buttonDetectPointsCallback();
+        }
+
+        private void buttonChooseDevice_Click(object sender, EventArgs e)
+        {
+            changeDeviceForDetectingPointOnMap();
         }
     }
 }

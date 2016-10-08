@@ -178,19 +178,13 @@ namespace FactorySheduler
         {
             mainWindow.setProgress(0);
             mapView = new MapView(searchNextDevices, reinicializeStaticBeacons, reinicializeCart, editMap);
-            editMapView = new EditMapView(finishEditingMap, showChooseDeviceForPointDetectView);
+            editMapView = new EditMapView(finishEditingMap, detectMapPoints, changeDeviceForDetectingPointOnMap);
             mainWindow.setView(mapView);
             mapView.addCarts(carts.Values.ToList());
             if (!connectToDashBoardAndStaticBeacons())
             {
                 startPeriodicScanOfDashboardConnection();
             }
-        }
-
-        private void showChooseDeviceForPointDetectView() {
-            ChooseDeviceForPointDetectView dialog = ChooseDeviceForPointDetectView.getInstance();
-            dialog.setDevices(carts.Values.ToList());
-            dialog.ShowDialog();
         }
 
         /// <summary>
@@ -262,24 +256,6 @@ namespace FactorySheduler
                 {
                     periodicCheckerOfDashboardConnection.Dispose();
                 }
-            };
-        }
-
-        /// <summary>
-        /// Započne periodické kontrolování bodů na mapě
-        /// </summary>
-        private void startPeriodicScanOfMapPoints()
-        {
-            if (periodicCheckerOfMapPoints.Enabled)
-            {
-                return;
-            }
-            periodicCheckerOfMapPoints = new System.Windows.Forms.Timer();
-            periodicCheckerOfMapPoints.Interval = 1000;
-            periodicCheckerOfMapPoints.Enabled = true;
-            periodicCheckerOfMapPoints.Tick += delegate
-            {
-                readMapPoint();
             };
         }
 
@@ -498,22 +474,45 @@ namespace FactorySheduler
         }
 
         /// <summary>
-        /// Bylo vzbráno zařízení pro detekci bodů na mapě
+        /// Načte body na mapě ze zařízení, pokud je nějaké zvoleno nebo nechá nejdřív vybrat zařízení
+        /// </summary>
+        private void detectMapPoints()
+        {
+            if (mapPointCheckerDevice != null)
+            {
+                readMapPoints();
+            }
+            else {
+                changeDeviceForDetectingPointOnMap();
+            }
+        }
+
+        /// <summary>
+        /// Zobrazí volbu zařízení pro detekci bodů na mapě
+        /// </summary>
+        private void changeDeviceForDetectingPointOnMap() {
+            ChooseDeviceForPointDetectView dialog = ChooseDeviceForPointDetectView.getInstance();
+            dialog.setDevices(carts.Values.ToList());
+            dialog.ShowDialog();
+        }
+
+        /// <summary>
+        /// Bylo vybráno zařízení pro detekci bodů na mapě
         /// </summary>
         /// <param name="device">zařízení</param>
         private void deviceForDetectPointWasSelected(Cart device) {
             mapPointCheckerDevice = device;
             editMapView.setDetectingDevice(device);
-            startPeriodicScanOfMapPoints();
+            readMapPoints();
         }
 
         /// <summary>
-        /// Přečte ze zařízení poslední naměřený bod na mapě
+        /// Přečte ze zařízení poslední naměřené body na mapě
         /// </summary>
-        private void readMapPoint() {
-            Point point = mapPointCheckerDevice.getMapPoint();
-            if (point.X != 0 && point.Y != 0) {
-                mapPoints.Add(point);
+        private void readMapPoints() {
+            List<Point> points = mapPointCheckerDevice.getMapPoints();
+            if (points.Count != 0) {
+                mapPoints.AddRange(points);
             }
             editMapView.setMapPoints(mapPoints);
         }

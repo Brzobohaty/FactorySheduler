@@ -77,11 +77,11 @@ namespace FactorySheduler.Views
             {
                 if (devices[i].name == ((RadioButton)sender).Text)
                 {
+                    Close();
                     deviceForDetectPointWasSelectedCallback(devices[i]);
                     break;
                 }
             }
-            Close();
         }
     }
 }

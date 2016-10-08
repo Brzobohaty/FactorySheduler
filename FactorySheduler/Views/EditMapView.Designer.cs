@@ -33,6 +33,7 @@
             this.buttonDetectPoints = new System.Windows.Forms.Button();
             this.mapBox = new System.Windows.Forms.PictureBox();
             this.buttonFinish = new System.Windows.Forms.Button();
+            this.buttonChooseDevice = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.mapBox)).BeginInit();
             this.SuspendLayout();
             // 
@@ -76,10 +77,22 @@
             this.buttonFinish.UseVisualStyleBackColor = true;
             this.buttonFinish.Click += new System.EventHandler(this.buttonFinish_Click);
             // 
+            // buttonChooseDevice
+            // 
+            this.buttonChooseDevice.AutoSize = true;
+            this.buttonChooseDevice.Location = new System.Drawing.Point(154, 11);
+            this.buttonChooseDevice.Name = "buttonChooseDevice";
+            this.buttonChooseDevice.Size = new System.Drawing.Size(145, 27);
+            this.buttonChooseDevice.TabIndex = 15;
+            this.buttonChooseDevice.Text = "Vybrat zařízení";
+            this.buttonChooseDevice.UseVisualStyleBackColor = true;
+            this.buttonChooseDevice.Click += new System.EventHandler(this.buttonChooseDevice_Click);
+            // 
             // EditMapView
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.Controls.Add(this.buttonChooseDevice);
             this.Controls.Add(this.buttonFinish);
             this.Controls.Add(this.mapBox);
             this.Controls.Add(this.buttonDetectPoints);
@@ -96,5 +109,6 @@
         private System.Windows.Forms.Button buttonDetectPoints;
         private System.Windows.Forms.PictureBox mapBox;
         private System.Windows.Forms.Button buttonFinish;
+        private System.Windows.Forms.Button buttonChooseDevice;
     }
 }
