@@ -113,6 +113,7 @@
             this.Controls.Add(this.progressBar);
             this.Controls.Add(this.panelView);
             this.Controls.Add(this.messageLabel);
+            this.DoubleBuffered = true;
             this.Font = new System.Drawing.Font("Microsoft Sans Serif", 10.2F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
             this.Margin = new System.Windows.Forms.Padding(4);
             this.Name = "MainWindow";

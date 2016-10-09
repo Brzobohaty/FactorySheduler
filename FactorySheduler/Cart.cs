@@ -284,10 +284,10 @@ namespace FactorySheduler
         /// Načte naposledy zaznamenané body z arduino při stisku tlačítka
         /// </summary>
         /// <returns>List zaznamenanných bodů</returns>
-        public virtual List<Point> getMapPoints()
+        public virtual List<MapPoint> getMapPoints()
         {
             RestRequest request = new RestRequest("arduino/read-map-points/", Method.GET);
-            List<Point> listOfPositions = new List<Point>();
+            List<MapPoint> listOfPositions = new List<MapPoint>();
 
             IRestResponse response = client.Execute(request);
             HttpStatusCode status = response.StatusCode;
@@ -301,7 +301,7 @@ namespace FactorySheduler
                         string[] xy = positions[i].Split(',');
                         int x = Int32.Parse(xy[0]);
                         int y = Int32.Parse(xy[1]);
-                        listOfPositions.Add(new Point(x, y));
+                        listOfPositions.Add(new MapPoint(new Point(x, y)));
                     }
                     return listOfPositions;
                 }

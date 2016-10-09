@@ -23,7 +23,7 @@ namespace FactorySheduler
         private System.Windows.Forms.Timer periodicCheckerOfDashboardConnection = new System.Windows.Forms.Timer(); //periodický kontroler připojení k aplikaci dashboard (v případě selhání připojení)
         private System.Windows.Forms.Timer periodicCheckerOfMapPoints = new System.Windows.Forms.Timer(); //periodický kontroler naměřených bodů na mapě (v případě měření nových bodů mapy)
         private const bool test = true; //proměnná, která indikuje, že se má v případě selhání připojit simulační wifi síť se simulačními vozíky
-        private List<Point> mapPoints = new List<Point>(); //body na mapě
+        private List<MapPoint> mapPoints = new List<MapPoint>(); //body na mapě
         private Cart mapPointCheckerDevice; //Zařízení s kterým se detekují bdy na mapě
 
         /// <param name="mainWindow">hlavní okno aplikace</param>
@@ -40,11 +40,28 @@ namespace FactorySheduler
         /// </summary>
         private void inicialize()
         {
-            networkScanner = new NetworkScanner();
-            networkScanner.subscribeIPFoundObserver(createCart);
-            networkScannerView.subscribeButtonNextListener(nextStepAfterNetworkScan);
-            networkScannerView.subscribeButtonRefreshListener(scanNetwork);
-            scanNetwork();
+            //TEST
+
+            editMapView = new EditMapView(finishEditingMap, detectMapPoints, changeDeviceForDetectingPointOnMap);
+            mainWindow.setView(editMapView);
+            List<Point> staticBeacons = new List<Point>();
+            staticBeacons.Add(new Point(0, 0));
+            staticBeacons.Add(new Point(100, 0));
+            staticBeacons.Add(new Point(0, 100));
+            staticBeacons.Add(new Point(100, 100));
+            editMapView.setStaticBeaconsPoints(staticBeacons);
+            mapPoints.Add(new MapPoint(new Point(50, 50)));
+            mapPoints.Add(new MapPoint(new Point(80, 20)));
+            mapPoints.Add(new MapPoint(new Point(10, 20)));
+            editMapView.setMapPoints(mapPoints);
+            
+            //TEST
+
+            //networkScanner = new NetworkScanner();
+            //networkScanner.subscribeIPFoundObserver(createCart);
+            //networkScannerView.subscribeButtonNextListener(nextStepAfterNetworkScan);
+            //networkScannerView.subscribeButtonRefreshListener(scanNetwork);
+            //scanNetwork();
         }
 
         /// <summary>
@@ -510,7 +527,7 @@ namespace FactorySheduler
         /// Přečte ze zařízení poslední naměřené body na mapě
         /// </summary>
         private void readMapPoints() {
-            List<Point> points = mapPointCheckerDevice.getMapPoints();
+            List<MapPoint> points = mapPointCheckerDevice.getMapPoints();
             if (points.Count != 0) {
                 mapPoints.AddRange(points);
             }
