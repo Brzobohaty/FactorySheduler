@@ -31,8 +31,11 @@ namespace FactorySheduler.Views
         Point mouseSecondPointRescaled = Point.Empty; //druhý bod pro vykreslení aktuální čáry (ve vykreslovacích souřadnicích)
         Point mouseFirstPointRescaled = Point.Empty; //první bod pro vykreslení aktuální čáry (ve vykreslovacích souřadnicích)
         private bool wasFirstClickedOnMap = false; //příznak, zda bylo kliknuto na mapu poprvé
-        private MapPoint selectedPoint = new MapPoint(Point.Empty); //bod, s kterým se budou provádět akce
+        private MapPoint selectedPointTemp = new MapPoint(Point.Empty); //bod, s kterým se budou provádět akce pomocí pravého tlačítka
+        private MapPoint selectedPoint = new MapPoint(Point.Empty); //bod, jehož proměnné jsou právě zobrazeny
         private ContextMenu pointMenu; //menu při kliknutí pravým tlačítkem na bod na mapě
+        Point currentPointRescaledTemp = new Point(); //bod v přepočítaných souřadnicicíh, na který bylo právě kliknuto
+        MapPoint currentPointTemp = new MapPoint(Point.Empty); //bod ve skutečné souřadnicích, na který bylo právě kliknuto
         System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(EditMapView));
 
         public EditMapView(Action buttonFinishCallback, Action buttonDetectPointsCallback, Action changeDeviceForDetectingPointOnMap)
@@ -47,6 +50,8 @@ namespace FactorySheduler.Views
             paintStaticBeacons();
             paintMapPoints();
             paintPositionOfDevice();
+
+            startPeriodicRefresh();
         }
 
         /// <summary>
@@ -97,7 +102,6 @@ namespace FactorySheduler.Views
         public void setDetectingDevice(Cart device)
         {
             detectingDevice = device;
-            startPeriodicRefresh();
         }
 
         /// <summary>
@@ -153,9 +157,17 @@ namespace FactorySheduler.Views
                         var g = e.Graphics;
                         g.SmoothingMode = SmoothingMode.AntiAlias;
                         Brush brush = new SolidBrush(Color.Black);
-                        Brush brushBackground = new SolidBrush(Color.LightSteelBlue);
+                        Color backgroundColor;
                         foreach (MapPoint point in mapPoints)
                         {
+                            if (point == selectedPoint)
+                            {
+                                backgroundColor = Color.Tomato;
+                            }
+                            else {
+                                backgroundColor = Color.LightSteelBlue;
+                            }
+                            Brush brushBackground = new SolidBrush(backgroundColor);
                             int x = (int)Math.Round(getRescaledValue(point.position.X, false, false));
                             int y = (int)Math.Round(getRescaledValue(point.position.Y, true, false));
                             g.FillEllipse(brushBackground, x - sizeOfStaticBeacon, y - sizeOfStaticBeacon, sizeOfStaticBeacon * 2, sizeOfStaticBeacon * 2);
@@ -163,7 +175,9 @@ namespace FactorySheduler.Views
                             {
                                 Image newImage = ((Image)(resources.GetObject("pictureBox1.Image")));
                                 g.DrawImage(newImage, x - sizeOfStaticBeacon, y - sizeOfStaticBeacon, sizeOfStaticBeacon * 2, sizeOfStaticBeacon * 2);
-                            } else if (point.type == PointTypeEnum.fullTanks) {
+                            }
+                            else if (point.type == PointTypeEnum.fullTanks)
+                            {
                                 Image newImage = ((Image)(resources.GetObject("pictureBox2.Image")));
                                 g.DrawImage(newImage, x - sizeOfStaticBeacon, y - sizeOfStaticBeacon, sizeOfStaticBeacon * 2, sizeOfStaticBeacon * 2);
                             }
@@ -285,7 +299,7 @@ namespace FactorySheduler.Views
             List<MapPoint[]> linesForDeleting = new List<MapPoint[]>();
             foreach (MapPoint[] line in lines)
             {
-                if (line[0].Equals(selectedPoint) || line[1].Equals(selectedPoint))
+                if (line[0].Equals(selectedPointTemp) || line[1].Equals(selectedPointTemp))
                 {
                     linesForDeleting.Add(line);
                 }
@@ -296,7 +310,7 @@ namespace FactorySheduler.Views
                 line[0].removePath(line[1]);
                 line[1].removePath(line[0]);
             }
-            mapPoints.Remove(selectedPoint);
+            mapPoints.Remove(selectedPointTemp);
             mapBox.Refresh();
         }
 
@@ -340,7 +354,7 @@ namespace FactorySheduler.Views
         /// <param name="mouseLocation"> pozice kurzoru myši</param>
         private void showMenuForPoint(MapPoint currentPoint, Point mouseLocation)
         {
-            selectedPoint = currentPoint;
+            selectedPointTemp = currentPoint;
             linesForDeleting.Clear();
 
             List<MenuItem> menuItemsList = new List<MenuItem>();
@@ -350,28 +364,31 @@ namespace FactorySheduler.Views
             deletePointMenuItem.Select += new EventHandler(markLine);
             menuItemsList.Add(deletePointMenuItem);
 
-            if (selectedPoint.type != PointTypeEnum.charge) {
+            if (selectedPointTemp.type != PointTypeEnum.charge)
+            {
                 MenuItem makeChargingStationFromPointMenuItem = new MenuItem("Udělat z bodu nabíjecí stanici");
                 makeChargingStationFromPointMenuItem.Click += new EventHandler(makeChargingStationFromPoint);
                 makeChargingStationFromPointMenuItem.Select += new EventHandler(markLine);
                 menuItemsList.Add(makeChargingStationFromPointMenuItem);
             }
 
-            if (selectedPoint.type != PointTypeEnum.fullTanks) {
+            if (selectedPointTemp.type != PointTypeEnum.fullTanks)
+            {
                 MenuItem makeStationWithFullTanksFromPointMenuItem = new MenuItem("Udělat z bodu stanici s plnými zásobníky");
                 makeStationWithFullTanksFromPointMenuItem.Click += new EventHandler(makeStationWithFullTanksFromPoint);
                 makeStationWithFullTanksFromPointMenuItem.Select += new EventHandler(markLine);
                 menuItemsList.Add(makeStationWithFullTanksFromPointMenuItem);
             }
 
-            if (selectedPoint.type != PointTypeEnum.emptyTanks) {
+            if (selectedPointTemp.type != PointTypeEnum.emptyTanks)
+            {
                 MenuItem makeStationForEmptyTanksFromPointMenuItem = new MenuItem("Udělat z bodu stanici pro prázdné zásobníky");
                 makeStationForEmptyTanksFromPointMenuItem.Click += new EventHandler(makeStationForEmptyTanksFromPoint);
                 makeStationForEmptyTanksFromPointMenuItem.Select += new EventHandler(markLine);
                 menuItemsList.Add(makeStationForEmptyTanksFromPointMenuItem);
             }
 
-            if (selectedPoint.type != PointTypeEnum.consumer)
+            if (selectedPointTemp.type != PointTypeEnum.consumer)
             {
                 MenuItem makeConsumerStationFromPointMenuItem = new MenuItem("Udělat z bodu spotřební stanici");
                 makeConsumerStationFromPointMenuItem.Click += new EventHandler(makeConsumerStationFromPoint);
@@ -379,7 +396,7 @@ namespace FactorySheduler.Views
                 menuItemsList.Add(makeConsumerStationFromPointMenuItem);
             }
 
-            if (selectedPoint.type != PointTypeEnum.init)
+            if (selectedPointTemp.type != PointTypeEnum.init)
             {
                 MenuItem makeConsumerStationFromPointMenuItem = new MenuItem("Udělat z bodu průchozí bod");
                 makeConsumerStationFromPointMenuItem.Click += new EventHandler(makeInitFromPoint);
@@ -411,7 +428,8 @@ namespace FactorySheduler.Views
         /// </summary>
         private void makeChargingStationFromPoint(object sender, EventArgs e)
         {
-            selectedPoint.type = PointTypeEnum.charge;
+            selectedPointTemp.type = PointTypeEnum.charge;
+            propertyGrid.Refresh();
         }
 
         /// <summary>
@@ -419,7 +437,8 @@ namespace FactorySheduler.Views
         /// </summary>
         private void makeStationWithFullTanksFromPoint(object sender, EventArgs e)
         {
-            selectedPoint.type = PointTypeEnum.fullTanks;
+            selectedPointTemp.type = PointTypeEnum.fullTanks;
+            propertyGrid.Refresh();
         }
 
         /// <summary>
@@ -427,7 +446,8 @@ namespace FactorySheduler.Views
         /// </summary>
         private void makeStationForEmptyTanksFromPoint(object sender, EventArgs e)
         {
-            selectedPoint.type = PointTypeEnum.emptyTanks;
+            selectedPointTemp.type = PointTypeEnum.emptyTanks;
+            propertyGrid.Refresh();
         }
 
         /// <summary>
@@ -435,7 +455,8 @@ namespace FactorySheduler.Views
         /// </summary>
         private void makeConsumerStationFromPoint(object sender, EventArgs e)
         {
-            selectedPoint.type = PointTypeEnum.consumer;
+            selectedPointTemp.type = PointTypeEnum.consumer;
+            propertyGrid.Refresh();
         }
 
         /// <summary>
@@ -443,7 +464,8 @@ namespace FactorySheduler.Views
         /// </summary>
         private void makeInitFromPoint(object sender, EventArgs e)
         {
-            selectedPoint.type = PointTypeEnum.init;
+            selectedPointTemp.type = PointTypeEnum.init;
+            propertyGrid.Refresh();
         }
 
         /// <summary>
@@ -473,19 +495,11 @@ namespace FactorySheduler.Views
         {
             markedLine = new MapPoint[2];
 
-            bool isPoint = false;
-            MapPoint currentPoint;
-            foreach (MapPoint point in mapPoints)
-            {
-                Point pointRescaled = new Point((int)Math.Round(getRescaledValue(point.position.X, false, false)), (int)Math.Round(getRescaledValue(point.position.Y, true, false)));
+            bool isPointTemp = isPoint(e.Location);
 
-                if (Math.Abs(e.Location.X - pointRescaled.X) < sizeOfStaticBeacon && Math.Abs(e.Location.Y - pointRescaled.Y) < sizeOfStaticBeacon)
-                {
-                    Cursor.Current = Cursors.Hand;
-                    isPoint = true;
-                    currentPoint = point;
-                    break;
-                }
+            if (isPointTemp)
+            {
+                Cursor.Current = Cursors.Hand;
             }
 
             if (wasFirstClickedOnMap)
@@ -504,7 +518,7 @@ namespace FactorySheduler.Views
                     // Update previous point
                     mouseFirstPointRescaled = e.Location;
                     Color color;
-                    if (isPoint)
+                    if (isPointTemp)
                     {
                         color = Color.Black;
                     }
@@ -521,71 +535,108 @@ namespace FactorySheduler.Views
                 mapBox.Image = bm;
             }
 
-
             mapBox.Refresh();
         }
 
         private void mapBox_MouseClick(object sender, MouseEventArgs e)
         {
-            bool isPoint = false;
-            Point currentPointRescaled = new Point();
-            MapPoint currentPoint = new MapPoint(Point.Empty);
+            if (isPoint(e.Location))
+            {
+                if (e.Button == MouseButtons.Left)
+                {
+                    pointClicked(currentPointTemp);
+                }
+                else {
+                    showMenuForPoint(currentPointTemp, e.Location);
+                }
+            }
+        }
+
+        private void mapBox_MouseDown(object sender, MouseEventArgs e)
+        {
+            if (isPoint(e.Location) && e.Button == MouseButtons.Left)
+            {
+                mouseSecondPointRescaled = currentPointRescaledTemp;
+                mouseSecondPoint = currentPointTemp;
+                wasFirstClickedOnMap = true;
+            }
+        }
+
+        private void mapBox_MouseUp(object sender, MouseEventArgs e)
+        {
+
+            if (isPoint(e.Location) && e.Button == MouseButtons.Left && !mouseSecondPoint.Equals(currentPointTemp))
+            {
+                wasFirstClickedOnMap = false;
+
+                MapPoint[] line = new MapPoint[2];
+                line[0] = mouseSecondPoint;
+                line[1] = currentPointTemp;
+                addLine(line);
+                mapBox.Refresh();
+
+                clearLastLine();
+                mapBox.Refresh();
+            }
+            else {
+                wasFirstClickedOnMap = false;
+                clearLastLine();
+            }
+        }
+
+        /// <summary>
+        /// Odebere naposledy vykreslenou čáru na mapě
+        /// </summary>
+        private void clearLastLine()
+        {
+            Bitmap bm = new Bitmap(mapBox.ClientSize.Width, mapBox.ClientSize.Height);
+            using (Graphics g = Graphics.FromImage(bm))
+            {
+                g.SmoothingMode = SmoothingMode.AntiAlias;
+
+                using (Pen clear_pen = new Pen(mapBox.BackColor, PEN_WIDTH))
+                {
+                    g.DrawLine(clear_pen, mouseSecondPointRescaled, mouseFirstPointRescaled);
+                }
+            }
+            mapBox.Image = bm;
+        }
+
+        /// <summary>
+        /// Jedná se o souřadnice nějakého bodu na mapě
+        /// </summary>
+        /// <param name="location">souřadnice</param>
+        /// <returns>true pokud se jedná o bod na mapě</returns>
+        private bool isPoint(Point location)
+        {
+            currentPointRescaledTemp = new Point();
+            currentPointTemp = new MapPoint(Point.Empty);
             foreach (MapPoint point in mapPoints)
             {
                 Point pointRescaled = new Point((int)Math.Round(getRescaledValue(point.position.X, false, false)), (int)Math.Round(getRescaledValue(point.position.Y, true, false)));
 
-                if (Math.Abs(e.Location.X - pointRescaled.X) < sizeOfStaticBeacon && Math.Abs(e.Location.Y - pointRescaled.Y) < sizeOfStaticBeacon)
+                if (Math.Abs(location.X - pointRescaled.X) < sizeOfStaticBeacon && Math.Abs(location.Y - pointRescaled.Y) < sizeOfStaticBeacon)
                 {
-                    isPoint = true;
-                    currentPointRescaled = pointRescaled;
-                    currentPoint = point;
-                    break;
+                    currentPointRescaledTemp = pointRescaled;
+                    currentPointTemp = point;
+                    return true;
                 }
             }
-
-            if (isPoint)
-            {
-                if (e.Button == MouseButtons.Left)
-                {
-                    if (!wasFirstClickedOnMap)
-                    {
-                        mouseSecondPointRescaled = currentPointRescaled;
-                        mouseSecondPoint = currentPoint;
-                        wasFirstClickedOnMap = true;
-                    }
-                    else {
-                        wasFirstClickedOnMap = false;
-
-                        MapPoint[] line = new MapPoint[2];
-                        line[0] = mouseSecondPoint;
-                        line[1] = currentPoint;
-                        addLine(line);
-                        mapBox.Refresh();
-
-                        // Clear last line drawn
-                        Bitmap bm = new Bitmap(mapBox.ClientSize.Width, mapBox.ClientSize.Height);
-                        using (Graphics g = Graphics.FromImage(bm))
-                        {
-                            g.SmoothingMode = SmoothingMode.AntiAlias;
-
-                            using (Pen clear_pen = new Pen(mapBox.BackColor, PEN_WIDTH))
-                            {
-                                g.DrawLine(clear_pen, mouseSecondPointRescaled, mouseFirstPointRescaled);
-                            }
-                        }
-                        mapBox.Image = bm;
-                        mapBox.Refresh();
-                    }
-                }
-                else {
-                    showMenuForPoint(currentPoint, e.Location);
-                }
-            }
+            return false;
         }
 
         private void mapBox_ClientSizeChanged(object sender, EventArgs e)
         {
             refreshAll();
+        }
+
+        /// <summary>
+        /// Listener pro kliknutí na bod
+        /// </summary>
+        private void pointClicked(MapPoint point)
+        {
+            selectedPoint = point;
+            propertyGrid.SelectedObject = point;
         }
     }
 }

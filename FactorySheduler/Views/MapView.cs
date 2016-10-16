@@ -208,11 +208,6 @@ namespace FactorySheduler.Views
             refreshAll();
         }
 
-        private void buttonSearchNextDevices_Click(object sender, EventArgs e)
-        {
-            buttonSearchNextDevicesCallback();
-        }
-
         /// <summary>
         /// Nastavení vykreslování všech vozíků na mapě
         /// </summary>
@@ -264,6 +259,11 @@ namespace FactorySheduler.Views
             SolidBrush drawBrush = new SolidBrush(Color.White);
             SizeF stringSize = g.MeasureString(cart.alias, drawFont);
             g.DrawString(cart.alias, drawFont, drawBrush, (int)getRescaledValue(cart.position.X, false, false) - (stringSize.Width / 2), (int)getRescaledValue(cart.position.Y, true, false) - (stringSize.Height / 2), new StringFormat());
+        }
+
+        private void buttonSearchNextDevices_Click(object sender, EventArgs e)
+        {
+            buttonSearchNextDevicesCallback();
         }
 
         private void buttonFront_Click(object sender, EventArgs e)

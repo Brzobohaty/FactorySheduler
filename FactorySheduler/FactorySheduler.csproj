@@ -59,6 +59,7 @@
     <Compile Include="Cart.cs" />
     <Compile Include="Controller.cs" />
     <Compile Include="Dashboard.cs" />
+    <Compile Include="MapPointTypeConverter.cs" />
     <Compile Include="MapPoint.cs" />
     <Compile Include="MathLibrary.cs" />
     <Compile Include="MessageTypesEnum.cs" />
