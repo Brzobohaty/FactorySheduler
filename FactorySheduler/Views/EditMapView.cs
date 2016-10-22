@@ -636,7 +636,35 @@ namespace FactorySheduler.Views
         private void pointClicked(MapPoint point)
         {
             selectedPoint = point;
+            selectedPoint.setUpdateCallback(updatePropertzGrid);
             propertyGrid.SelectedObject = point;
+        }
+
+        /// <summary>
+        /// Callback, že došlo ke změně proměnné v tabulce vlastností bodů
+        /// </summary>
+        private void propertyGrid_PropertyValueChanged(object s, PropertyValueChangedEventArgs e)
+        {
+            string propertyName = e.ChangedItem.PropertyDescriptor.Name;
+            selectedPoint.propertyChanged(propertyName);
+            propertyGrid.Refresh();
+        }
+
+        /// <summary>
+        /// Aktualizuje tabulku s vlastnostmi bodů
+        /// </summary>
+        delegate void UpdatePropertzGrid();
+        private void updatePropertzGrid() {
+            if (propertyGrid.InvokeRequired)
+            {
+                UpdatePropertzGrid cb = new UpdatePropertzGrid(updatePropertzGrid);
+                this.Invoke(cb, new object[] {});
+            }
+            else
+            {
+                propertyGrid.Refresh();
+            }
+            
         }
     }
 }

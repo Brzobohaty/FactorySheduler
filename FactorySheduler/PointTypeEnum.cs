@@ -7,6 +7,9 @@ using System.Threading.Tasks;
 
 namespace FactorySheduler
 {
+    /// <summary>
+    /// Výčet typů speciálních bodů
+    /// </summary>
     public enum PointTypeEnum {
         [Description("Průchozí")]
         init,

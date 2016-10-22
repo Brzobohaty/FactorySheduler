@@ -40,6 +40,8 @@ namespace FactorySheduler
         /// </summary>
         private void inicialize()
         {
+            MapPointInputServer mapPointInputServer = MapPointInputServer.getMapPointInputServer();
+
             //TEST
 
             editMapView = new EditMapView(finishEditingMap, detectMapPoints, changeDeviceForDetectingPointOnMap);

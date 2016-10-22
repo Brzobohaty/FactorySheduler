@@ -59,6 +59,8 @@
     <Compile Include="Cart.cs" />
     <Compile Include="Controller.cs" />
     <Compile Include="Dashboard.cs" />
+    <Compile Include="DeviceOnPoint.cs" />
+    <Compile Include="MapPointInputServer.cs" />
     <Compile Include="MapPointTypeConverter.cs" />
     <Compile Include="MapPoint.cs" />
     <Compile Include="MathLibrary.cs" />
