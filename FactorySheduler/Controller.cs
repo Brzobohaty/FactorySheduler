@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -24,6 +25,8 @@ namespace FactorySheduler
         private System.Windows.Forms.Timer periodicCheckerOfMapPoints = new System.Windows.Forms.Timer(); //periodický kontroler naměřených bodů na mapě (v případě měření nových bodů mapy)
         private const bool test = true; //proměnná, která indikuje, že se má v případě selhání připojit simulační wifi síť se simulačními vozíky
         private List<MapPoint> mapPoints = new List<MapPoint>(); //body na mapě
+        private List<MapPoint[]> mapLines = new List<MapPoint[]>(); //seznam čar spojujících body na mapě
+        private List<Point> staticBeacons = new List<Point>(); //statické majáky na mapě
         private Cart mapPointCheckerDevice; //Zařízení s kterým se detekují bdy na mapě
 
         /// <param name="mainWindow">hlavní okno aplikace</param>
@@ -42,21 +45,38 @@ namespace FactorySheduler
         {
             MapPointInputServer mapPointInputServer = MapPointInputServer.getMapPointInputServer();
 
+            try
+            {
+                mapLines = MapMemory.DeSerializeObject<List<MapPoint[]>>("mapLines.xml");
+            }
+            catch (FileNotFoundException) { }
+            try
+            {
+                mapPoints = MapMemory.DeSerializeObject<List<MapPoint>>("mapPoints.xml");
+            }
+            catch (FileNotFoundException) { }
+            try
+            {
+                staticBeacons = MapMemory.DeSerializeObject<List<Point>>("staticBeacons.xml");
+            }
+            catch (FileNotFoundException) { }
+
             //TEST
+
+            //staticBeacons.Add(new Point(0, 0));
+            //staticBeacons.Add(new Point(100, 0));
+            //staticBeacons.Add(new Point(0, 100));
+            //staticBeacons.Add(new Point(100, 100));
+            //mapPoints.Add(new MapPoint(new Point(50, 50)));
+            //mapPoints.Add(new MapPoint(new Point(80, 20)));
+            //mapPoints.Add(new MapPoint(new Point(10, 20)));
 
             editMapView = new EditMapView(finishEditingMap, detectMapPoints, changeDeviceForDetectingPointOnMap);
             mainWindow.setView(editMapView);
-            List<Point> staticBeacons = new List<Point>();
-            staticBeacons.Add(new Point(0, 0));
-            staticBeacons.Add(new Point(100, 0));
-            staticBeacons.Add(new Point(0, 100));
-            staticBeacons.Add(new Point(100, 100));
             editMapView.setStaticBeaconsPoints(staticBeacons);
-            mapPoints.Add(new MapPoint(new Point(50, 50)));
-            mapPoints.Add(new MapPoint(new Point(80, 20)));
-            mapPoints.Add(new MapPoint(new Point(10, 20)));
             editMapView.setMapPoints(mapPoints);
-            
+            editMapView.setMapLines(mapLines);
+
             //TEST
 
             //networkScanner = new NetworkScanner();
@@ -213,6 +233,9 @@ namespace FactorySheduler
             if (periodicCheckerOfMapPoints != null) {
                 periodicCheckerOfMapPoints.Dispose();
             }
+            MapMemory.SerializeObject(mapPoints, "mapPoints.xml");
+            MapMemory.SerializeObject(staticBeacons, "staticBeacons.xml");
+            MapMemory.SerializeObject(mapLines, "mapLines.xml");
             mainWindow.setView(mapView);
         }
 

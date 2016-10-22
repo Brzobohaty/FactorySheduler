@@ -55,6 +55,15 @@ namespace FactorySheduler.Views
         }
 
         /// <summary>
+        /// Nastaví cesty na mapě
+        /// </summary>
+        /// <param name="mapLines">seznam cest</param>
+        public void setMapLines(List<MapPoint[]> mapLines)
+        {
+            lines = mapLines;
+        }
+
+        /// <summary>
         /// Nastaví naměřené body na mapě
         /// </summary>
         /// <param name="mapPoints">Naměřené body</param>

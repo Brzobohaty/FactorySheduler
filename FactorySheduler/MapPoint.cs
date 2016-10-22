@@ -12,7 +12,8 @@ namespace FactorySheduler
     {
         [DisplayName("Pozice")]
         [Description("Reálná pozice bodu na mapě vůči souřadnicovému systému majáků.")]
-        public Point position { get; private set; } //reálné souřadnice bodu
+        [ReadOnly(true)]
+        public Point position { get; set; } //reálné souřadnice bodu
         [DisplayName("Typ")]
         [Description("Druh bodu na mapě určuje, co bude možné na daném bodu provádět za akce.")]
         [TypeConverter(typeof(MapPointTypeConverter))]
@@ -22,13 +23,17 @@ namespace FactorySheduler
         public int adrress { get; set; } = -1; //adresa zařízení na daném bodě
         [DisplayName("Stav")]
         [Description("Aktuální stav zařízení na daném bodě.")]
-        public string state { get; private set; } //stav zařízení na daném bodě
+        [ReadOnly(true)]
+        public string state { get; set; } //stav zařízení na daném bodě
         [DisplayName("Chyba")]
         [Description("Aktuální chyba na daném zařízení.")]
-        public string error { get; private set; } //stav zařízení na daném bodě
+        [ReadOnly(true)]
+        public string error { get; set; } //stav zařízení na daném bodě
         private List<MapPoint> paths = new List<MapPoint>(); //seynam bodů do kterých vede cesta z tohoto bodu
         private DeviceOnPoint device; //zařízení na tomto bodě (UDP virtualizace)
         private Action updateStatusCallback; //callback při aktualizaci statusu
+
+        private MapPoint(){}
 
         public MapPoint(Point position)
         {
