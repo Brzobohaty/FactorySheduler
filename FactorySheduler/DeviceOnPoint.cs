@@ -75,6 +75,30 @@ namespace FactorySheduler
                             break;
                     }
                     break;
+                default: this.type = PointTypeEnum.init; break;
+            }
+        }
+
+        /// <summary>
+        /// Změní typo zařízení
+        /// </summary>
+        /// <param name="type">typ zakódovaný v jednom zanku</param>
+        public void changeType(char type) {
+            switch (type)
+            {
+                case 'E':
+                    this.type = PointTypeEnum.emptyTanks;
+                    break;
+                case 'F':
+                    this.type = PointTypeEnum.fullTanks;
+                    break;
+                case 'C':
+                    this.type = PointTypeEnum.charge;
+                    break;
+                case 'O':
+                    this.type = PointTypeEnum.consumer;
+                    break;
+                default: this.type = PointTypeEnum.init; break;
             }
         }
 
@@ -143,7 +167,9 @@ namespace FactorySheduler
                     }
                     break;
             }
-            updateStatusCallback();
+            if (updateStatusCallback != null) {
+                updateStatusCallback();
+            }
         }
     }
 }

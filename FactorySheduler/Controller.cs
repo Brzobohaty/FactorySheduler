@@ -55,6 +55,10 @@ namespace FactorySheduler
                 mapPoints = MapMemory.DeSerializeObject<List<MapPoint>>("mapPoints.xml");
             }
             catch (FileNotFoundException) { }
+            foreach (var mapPoint in mapPoints)
+            {
+                mapPoint.setDevice();
+            }
             try
             {
                 staticBeacons = MapMemory.DeSerializeObject<List<Point>>("staticBeacons.xml");
@@ -78,6 +82,7 @@ namespace FactorySheduler
             //editMapView.setMapLines(mapLines);
 
             nextStepAfterNetworkScan();
+            mapView.startPeriodicRefresh();
 
             //TEST
 

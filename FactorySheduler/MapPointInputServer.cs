@@ -14,10 +14,6 @@ namespace FactorySheduler
 {
     public class MapPointInputServer
     {
-        private IPEndPoint sender = new IPEndPoint(IPAddress.Any, 0);
-        private byte[] data = new byte[1024];
-        private IPEndPoint ipep = new IPEndPoint(IPAddress.Any, 5555);
-        private UdpClient newsock;
         private Dictionary<int,DeviceOnPoint> devices = new Dictionary<int, DeviceOnPoint>(); //slovník všech zařízení, která byla detekována (klíč je jejich virtuální adresa)
         private static MapPointInputServer instance; //insatnce této třídy (singleton)
 
@@ -30,7 +26,8 @@ namespace FactorySheduler
         }
 
         private MapPointInputServer() {
-            newsock = new UdpClient(ipep);
+            IPEndPoint ipep = new IPEndPoint(IPAddress.Any, 5555);
+            UdpClient newsock = new UdpClient(ipep);
 
             BackgroundWorker bw = new BackgroundWorker();
 
@@ -38,7 +35,7 @@ namespace FactorySheduler
             {
                 while (true)
                 {
-                    readRequest();
+                    readRequest(newsock);
                 }
             });
 
@@ -56,28 +53,73 @@ namespace FactorySheduler
                 return devices[adrress];
             }
             else {
-                throw new KeyNotFoundException();
+                try {
+                    DeviceOnPoint device = getNewDevice(adrress);
+                    devices.Add(adrress, device);
+                    return device;
+                }
+                catch (Exception) {
+                    DeviceOnPoint device = new DeviceOnPoint(adrress, 'x', 'x');
+                    devices.Add(adrress, device);
+                    return device;
+                }
             }
         }
 
         /// <summary>
         /// Přečte jeden UDP request
         /// </summary>
-        private void readRequest() {
-            data = newsock.Receive(ref sender);
+        private void readRequest(UdpClient sock) {
+            IPEndPoint sender = new IPEndPoint(IPAddress.Any, 0);
+            byte[] data = sock.Receive(ref sender);
             if (data.Length == 3) {
                 int address = data[0];
                 char type = (char)data[1];
                 char status = (char)data[2];
                 if (devices.ContainsKey(address))
                 {
+                    devices[address].changeType(type);
                     devices[address].updateStatus(status);
                 }
                 else {
                     devices.Add(address, new DeviceOnPoint(address, type, status));
                 }
                 
-                newsock.Send(data, data.Length, sender);
+                sock.Send(data, data.Length, sender);
+            }
+        }
+
+        /// <summary>
+        /// Vrátí zařízení, které je na dané virtuální adrese
+        /// </summary>
+        /// <param name="adress">virtuální adresa zařízení</param>
+        /// <returns>zařízení</returns>
+        public DeviceOnPoint getNewDevice(int adress)
+        {
+            try
+            {
+                UdpClient udpClient = new UdpClient();
+                IPEndPoint appEndPoint = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 6666);
+                udpClient.Connect(appEndPoint);
+
+                byte[] sendBytes = new byte[] { (byte)adress };
+
+                udpClient.Send(sendBytes, sendBytes.Length);
+
+                //Blocks until a message returns on this socket from a remote host.
+                Byte[] receiveBytes = udpClient.Receive(ref appEndPoint);
+
+                int address = receiveBytes[0];
+                char type = (char)receiveBytes[1];
+                char status = (char)receiveBytes[2];
+
+                udpClient.Close();
+
+                return new DeviceOnPoint(address, type, status);
+            }
+            catch (Exception e)
+            {
+                throw e;
             }
         }
     }

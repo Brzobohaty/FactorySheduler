@@ -24,16 +24,18 @@ namespace FactorySheduler
         [DisplayName("Stav")]
         [Description("Aktuální stav zařízení na daném bodě.")]
         [ReadOnly(true)]
-        public string state { get; set; } //stav zařízení na daném bodě
+        public string translatedState { get; set; } //stav zařízení na daném bodě, ale už přeložený
         [DisplayName("Chyba")]
         [Description("Aktuální chyba na daném zařízení.")]
         [ReadOnly(true)]
         public string error { get; set; } //stav zařízení na daném bodě
-        private List<MapPoint> paths = new List<MapPoint>(); //seynam bodů do kterých vede cesta z tohoto bodu
+        //private List<MapPoint> paths = new List<MapPoint>(); //seynam bodů do kterých vede cesta z tohoto bodu
         private DeviceOnPoint device; //zařízení na tomto bodě (UDP virtualizace)
         private Action updateStatusCallback; //callback při aktualizaci statusu
+        [Browsable(false)]
+        public string state { get; set; } //stav zařízení na daném bodě
 
-        private MapPoint(){}
+        private MapPoint() { }
 
         public MapPoint(Point position)
         {
@@ -47,7 +49,7 @@ namespace FactorySheduler
         /// <param name="point"> druhý bod</param>
         public void addPath(MapPoint point)
         {
-            paths.Add(point);
+            //paths.Add(point);
         }
 
         /// <summary>
@@ -56,7 +58,7 @@ namespace FactorySheduler
         /// <param name="point"> druhý bod</param>
         public void removePath(MapPoint point)
         {
-            paths.Remove(point);
+            //paths.Remove(point);
         }
 
         /// <summary>
@@ -77,35 +79,43 @@ namespace FactorySheduler
         /// <summary>
         /// Nastaví/najde zařízení podle aktuální virtuální adresy
         /// </summary>
-        private void setDevice()
+        public void setDevice()
         {
-            state = "";
-            try
-            {
-                device = MapPointInputServer.getMapPointInputServer().getDevice(adrress);
+            translatedState = "";
 
-                if (device.type == type)
+            device = MapPointInputServer.getMapPointInputServer().getDevice(adrress);
+
+            if (device.type == type)
+            {
+                error = "";
+                state = device.status;
+                translatedState = translateStatus(device.status);
+                device.setStatusUpdateCallback(updateStatus);
+            }
+            else {
+                if (device.type == PointTypeEnum.init)
                 {
-                    error = "";
-                    state = translateStatus(device.status);
+                    error = "Pod danou adresou není přihlášeno žádné zařízení.";
                     device.setStatusUpdateCallback(updateStatus);
                 }
                 else {
                     error = "Zařízení na dané adrese je jiného typu (" + device.type + ")";
                 }
             }
-            catch (KeyNotFoundException e)
-            {
-                error = "Pod danou adresou není přihlášeno žádné zařízení.";
-            }
         }
 
         /// <summary>
         /// Callback pro aktualizaci stavu zařízení na tomto bodě
         /// </summary>
-        public void updateStatus() {
-            state = translateStatus(device.status);
-            updateStatusCallback();
+        public void updateStatus()
+        {
+            error = "";
+            state = device.status;
+            translatedState = translateStatus(device.status);
+            if (updateStatusCallback != null)
+            {
+                updateStatusCallback();
+            }
         }
 
         /// <summary>
@@ -113,8 +123,10 @@ namespace FactorySheduler
         /// </summary>
         /// <param name="status">zakódovaný stav zařízení</param>
         /// <returns>stav v čitelné podobě</returns>
-        private string translateStatus(string status) {
-            switch (status) {
+        private string translateStatus(string status)
+        {
+            switch (status)
+            {
                 case "free": return "volno";
                 case "full": return "obsazeno";
                 case "filled": return "naplněný kanister";

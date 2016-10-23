@@ -63,7 +63,7 @@ namespace FactorySheduler.Views
                 buttonsLayout.Controls.Add(button);
                 button.CheckedChanged += buttonDeviceClicked;
                 button.Tag = cart;
-                if (j==0)
+                if (j == 0)
                 {
                     button.Checked = true;
                     showProperties(cart);
@@ -85,7 +85,8 @@ namespace FactorySheduler.Views
         /// Zapnutí/vypnutí tlačítka pro hledání dalších zařízení
         /// </summary>
         /// <param name="enabled">true pokud zapnout</param>
-        public void setEnableRefreshButton(bool enabled) {
+        public void setEnableRefreshButton(bool enabled)
+        {
             buttonSearchNextDevices.Enabled = enabled;
             buttonReinicializeCart.Enabled = enabled;
         }
@@ -94,13 +95,15 @@ namespace FactorySheduler.Views
         /// Nastaví do mapy statické majáky
         /// </summary>
         /// <param name="staticBeacons"></param>
-        public void setStaticBeaconsPoints(List<Point> staticBeacons) {
+        public void setStaticBeaconsPoints(List<Point> staticBeacons)
+        {
             minStaticBeaconValue = 99999999;
             maxStaticBeaconValue = 0;
             this.staticBeacons = staticBeacons;
             foreach (Point beacon in staticBeacons)
             {
-                if (beacon.X < minStaticBeaconValue) {
+                if (beacon.X < minStaticBeaconValue)
+                {
                     minStaticBeaconValue = beacon.X;
                 }
                 if (beacon.X > maxStaticBeaconValue)
@@ -140,7 +143,8 @@ namespace FactorySheduler.Views
         /// <summary>
         /// Vykreslí statické majáky
         /// </summary>
-        private void paintStaticBeacons() {
+        private void paintStaticBeacons()
+        {
             mapBox.Paint += new PaintEventHandler(
                     delegate (object sender, PaintEventArgs e)
                     {
@@ -172,6 +176,14 @@ namespace FactorySheduler.Views
                         foreach (MapPoint point in mapPoints)
                         {
                             backgroundColor = Color.LightSteelBlue;
+                            switch (point.state)
+                            {
+                                case "free": backgroundColor = Color.Green; break;
+                                case "full": backgroundColor = Color.Red; break;
+                                case "filled": backgroundColor = Color.Green; break;
+                                case "filling": backgroundColor = Color.Red; break;
+                                case "empty": backgroundColor = Color.Orange; break;
+                            }
                             Brush brushBackground = new SolidBrush(backgroundColor);
                             int x = (int)Math.Round(getRescaledValue(point.position.X, false, false));
                             int y = (int)Math.Round(getRescaledValue(point.position.Y, true, false));
@@ -237,7 +249,8 @@ namespace FactorySheduler.Views
         /// <param name="value">hodnota, kterou chceme přeškálovat</param>
         /// <param name="reversed">zda se má hodnota přeškálovat reverzně, tedy zda se má brát škála odzadu</param>
         /// <returns>přeškílovaná hodnota</returns>
-        private double getRescaledValue(double value, bool reversed, bool normalized) {
+        private double getRescaledValue(double value, bool reversed, bool normalized)
+        {
             double min = minStaticBeaconValue;
             double max = maxStaticBeaconValue;
             if (normalized)
@@ -246,7 +259,8 @@ namespace FactorySheduler.Views
                 max -= min;
             }
 
-            if (reversed) {
+            if (reversed)
+            {
                 return MathLibrary.changeScale(value, max, min, 0, mapBox.Height);
             }
             else {
@@ -257,8 +271,10 @@ namespace FactorySheduler.Views
         /// <summary>
         /// Všechno co se má v čase aktualzovat bude aktualizováno
         /// </summary>
-        private void refreshAll() {
-            if (!propertyGrid.ContainsFocus) {
+        private void refreshAll()
+        {
+            if (!propertyGrid.ContainsFocus)
+            {
                 propertyGrid.Refresh();
             }
             for (int j = 0; j < carts.Count(); j++)
@@ -280,7 +296,8 @@ namespace FactorySheduler.Views
         /// Ukáže všechny proměnné daného vozíku
         /// </summary>
         /// <param name="cart">vozík, jehož proměnné se mají zobrazit</param>
-        private void showProperties(Cart cart) {
+        private void showProperties(Cart cart)
+        {
             propertyGrid.SelectedObject = cart;
         }
 
@@ -334,15 +351,16 @@ namespace FactorySheduler.Views
         private void paintCart(Graphics g, Cart cart)
         {
             Color color = Color.Black;
-            if (cart.asociatedButton.Checked) {
+            if (cart.asociatedButton.Checked)
+            {
                 color = Color.Goldenrod;
             }
 
             //vykreslení základny vozíku
             Pen pen = new Pen(color, (int)getRescaledValue(cart.distanceFromHedghogToLeftSideOfCart, false, true) + (int)getRescaledValue(cart.distanceFromHedghogToRightSideOfCart, false, true));
             pen.EndCap = LineCap.Round;
-            MathLibrary.Point firstPoint = MathLibrary.getPointOnLine(getRescaledValue(cart.position.X, false, false), getRescaledValue(cart.position.Y, true, false), cart.angle - 180, (int)getRescaledValue(cart.longg, false, true) /2);
-            MathLibrary.Point secondPoint = MathLibrary.getPointOnLine(getRescaledValue(cart.position.X, false, false), getRescaledValue(cart.position.Y, true, false), cart.angle, (int)getRescaledValue(cart.longg, false, true) /2);
+            MathLibrary.Point firstPoint = MathLibrary.getPointOnLine(getRescaledValue(cart.position.X, false, false), getRescaledValue(cart.position.Y, true, false), cart.angle - 180, (int)getRescaledValue(cart.longg, false, true) / 2);
+            MathLibrary.Point secondPoint = MathLibrary.getPointOnLine(getRescaledValue(cart.position.X, false, false), getRescaledValue(cart.position.Y, true, false), cart.angle, (int)getRescaledValue(cart.longg, false, true) / 2);
             g.DrawLine(pen, (float)firstPoint.X, (float)firstPoint.Y, (float)secondPoint.X, (float)secondPoint.Y);
 
             paintCartAlias(g, cart);
@@ -353,7 +371,8 @@ namespace FactorySheduler.Views
         /// </summary>
         /// <param name="g">grafika mapy</param>
         /// <param name="cart">vozík</param>
-        private void paintCartAlias(Graphics g, Cart cart) {
+        private void paintCartAlias(Graphics g, Cart cart)
+        {
             Font drawFont = new Font("Arial", 10);
             SolidBrush drawBrush = new SolidBrush(Color.White);
             SizeF stringSize = g.MeasureString(cart.alias, drawFont);
