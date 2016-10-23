@@ -5,6 +5,7 @@ using System.Linq;
 using System.Windows.Forms;
 using System.Drawing.Drawing2D;
 using System.Collections;
+using System.ComponentModel;
 
 namespace FactorySheduler.Views
 {
@@ -52,6 +53,14 @@ namespace FactorySheduler.Views
             paintPositionOfDevice();
 
             startPeriodicRefresh();
+        }
+
+        /// <summary>
+        /// Vrátí zdroje s obrázky
+        /// </summary>
+        /// <returns>zdroje s obrázky</returns>
+        public ComponentResourceManager getResources() {
+            return resources;
         }
 
         /// <summary>

@@ -5,6 +5,7 @@ using System.Linq;
 using System.Windows.Forms;
 using System.Drawing.Drawing2D;
 using System.Collections;
+using System.ComponentModel;
 
 namespace FactorySheduler.Views
 {
@@ -13,7 +14,7 @@ namespace FactorySheduler.Views
     /// </summary>
     public partial class MapView : UserControl
     {
-        private List<Cart> carts; //vozíky
+        private List<Cart> carts = new List<Cart>(); //vozíky
         private Action buttonSearchNextDevicesCallback; //callback při kliknutí na tlačítko hledat další zařízení
         private Action buttonReinicializeStaticBeaconsCallback; //callback při kliknutí na tlačítko pro reinicializaci statických majáků
         private Action buttonEditMapCallback; //callback při klinutí natalčítko pro editaci mapy
@@ -21,18 +22,24 @@ namespace FactorySheduler.Views
         private Action<Cart> reinicializeCart; //callback při kliknutí na tlačítko reinicializace jednoho vozíku
         private const int sizeOfStaticBeacon = 10; //´velikost statického majáku v pixelech
         private List<Point> staticBeacons; //pozice statických majáků
-        //max a min souřadnice statických majáků
-        private int minStaticBeaconValue = 99999999;
-        private int maxStaticBeaconValue = 0;
-        
+        private int minStaticBeaconValue = 99999999; //max souřadnice statických majáků
+        private int maxStaticBeaconValue = 0; //min souřadnice statických majáků
+        private List<MapPoint[]> lines = new List<MapPoint[]>(); //seznam čar spojujících body na mapě
+        private List<MapPoint> mapPoints = new List<MapPoint>(); //Body na mapě
+        private ComponentResourceManager resourcesFromEditMapView; //zdroje s obrázky z editovací mapy
 
-        public MapView(Action buttonSearchNextDevicesCallback, Action buttonReinicializeStaticBeaconsCallback, Action<Cart> reinicializeCart, Action buttonEditMapCallback)
+
+        public MapView(Action buttonSearchNextDevicesCallback, Action buttonReinicializeStaticBeaconsCallback, Action<Cart> reinicializeCart, Action buttonEditMapCallback, ComponentResourceManager resourcesFromEditMapView)
         {
+            this.resourcesFromEditMapView = resourcesFromEditMapView;
             this.buttonSearchNextDevicesCallback = buttonSearchNextDevicesCallback;
             this.buttonReinicializeStaticBeaconsCallback = buttonReinicializeStaticBeaconsCallback;
             this.buttonEditMapCallback = buttonEditMapCallback;
             this.reinicializeCart = reinicializeCart;
             InitializeComponent();
+            paintStaticBeacons();
+            paintLines();
+            paintMapPoints();
         }
 
         /// <summary>
@@ -109,7 +116,25 @@ namespace FactorySheduler.Views
                     maxStaticBeaconValue = beacon.Y;
                 }
             }
-            paintStaticBeacons();
+        }
+
+        /// <summary>
+        /// Nastaví cesty na mapě
+        /// </summary>
+        /// <param name="mapLines">seznam cest</param>
+        public void setMapLines(List<MapPoint[]> mapLines)
+        {
+            lines = mapLines;
+        }
+
+        /// <summary>
+        /// Nastaví body na mapě
+        /// </summary>
+        /// <param name="mapPoints">Naměřené body</param>
+        public void setMapPoints(List<MapPoint> mapPoints)
+        {
+            this.mapPoints = mapPoints;
+            refreshAll();
         }
 
         /// <summary>
@@ -130,6 +155,80 @@ namespace FactorySheduler.Views
                         }
                     }
                 );
+        }
+
+        /// <summary>
+        /// Vykreslí body na mapě
+        /// </summary>
+        private void paintMapPoints()
+        {
+            mapBox.Paint += new PaintEventHandler(
+                    delegate (object sender, PaintEventArgs e)
+                    {
+                        var g = e.Graphics;
+                        g.SmoothingMode = SmoothingMode.AntiAlias;
+                        Brush brush = new SolidBrush(Color.Black);
+                        Color backgroundColor;
+                        foreach (MapPoint point in mapPoints)
+                        {
+                            backgroundColor = Color.LightSteelBlue;
+                            Brush brushBackground = new SolidBrush(backgroundColor);
+                            int x = (int)Math.Round(getRescaledValue(point.position.X, false, false));
+                            int y = (int)Math.Round(getRescaledValue(point.position.Y, true, false));
+                            g.FillEllipse(brushBackground, x - sizeOfStaticBeacon, y - sizeOfStaticBeacon, sizeOfStaticBeacon * 2, sizeOfStaticBeacon * 2);
+                            if (point.type == PointTypeEnum.charge)
+                            {
+                                Image newImage = ((Image)(resourcesFromEditMapView.GetObject("pictureBox1.Image")));
+                                g.DrawImage(newImage, x - sizeOfStaticBeacon, y - sizeOfStaticBeacon, sizeOfStaticBeacon * 2, sizeOfStaticBeacon * 2);
+                            }
+                            else if (point.type == PointTypeEnum.fullTanks)
+                            {
+                                Image newImage = ((Image)(resourcesFromEditMapView.GetObject("pictureBox2.Image")));
+                                g.DrawImage(newImage, x - sizeOfStaticBeacon, y - sizeOfStaticBeacon, sizeOfStaticBeacon * 2, sizeOfStaticBeacon * 2);
+                            }
+                            else if (point.type == PointTypeEnum.consumer)
+                            {
+                                Image newImage = ((Image)(resourcesFromEditMapView.GetObject("pictureBox3.Image")));
+                                g.DrawImage(newImage, x - sizeOfStaticBeacon, y - sizeOfStaticBeacon, sizeOfStaticBeacon * 2, sizeOfStaticBeacon * 2);
+                            }
+                            else if (point.type == PointTypeEnum.emptyTanks)
+                            {
+                                Image newImage = ((Image)(resourcesFromEditMapView.GetObject("pictureBox4.Image")));
+                                g.DrawImage(newImage, x - sizeOfStaticBeacon, y - sizeOfStaticBeacon, sizeOfStaticBeacon * 2, sizeOfStaticBeacon * 2);
+                            }
+                            else {
+                                g.FillEllipse(brush, new Rectangle(x - (sizeOfStaticBeacon / 2), y - (sizeOfStaticBeacon / 2), sizeOfStaticBeacon, sizeOfStaticBeacon));
+
+                            }
+                        }
+                    }
+                );
+        }
+
+        /// <summary>
+        /// Vykreslení čáry na mapě
+        /// </summary>
+        private void paintLines()
+        {
+            mapBox.Paint += new PaintEventHandler(
+                    delegate (object senderr, PaintEventArgs ee)
+                    {
+                        var g = ee.Graphics;
+                        g.SmoothingMode = SmoothingMode.AntiAlias;
+
+                        foreach (MapPoint[] line in lines)
+                        {
+                            Color color = Color.Black;
+                            using (var p = new Pen(color, 3))
+                            {
+                                int x1 = (int)Math.Round(getRescaledValue(line[0].position.X, false, false));
+                                int y1 = (int)Math.Round(getRescaledValue(line[0].position.Y, true, false));
+                                int x2 = (int)Math.Round(getRescaledValue(line[1].position.X, false, false));
+                                int y2 = (int)Math.Round(getRescaledValue(line[1].position.Y, true, false));
+                                g.DrawLine(p, new Point(x1, y1), new Point(x2, y2));
+                            }
+                        }
+                    });
         }
 
         /// <summary>

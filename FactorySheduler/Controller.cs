@@ -71,11 +71,13 @@ namespace FactorySheduler
             //mapPoints.Add(new MapPoint(new Point(80, 20)));
             //mapPoints.Add(new MapPoint(new Point(10, 20)));
 
-            editMapView = new EditMapView(finishEditingMap, detectMapPoints, changeDeviceForDetectingPointOnMap);
-            mainWindow.setView(editMapView);
-            editMapView.setStaticBeaconsPoints(staticBeacons);
-            editMapView.setMapPoints(mapPoints);
-            editMapView.setMapLines(mapLines);
+            //editMapView = new EditMapView(finishEditingMap, detectMapPoints, changeDeviceForDetectingPointOnMap);
+            //mainWindow.setView(editMapView);
+            //editMapView.setStaticBeaconsPoints(staticBeacons);
+            //editMapView.setMapPoints(mapPoints);
+            //editMapView.setMapLines(mapLines);
+
+            nextStepAfterNetworkScan();
 
             //TEST
 
@@ -216,8 +218,15 @@ namespace FactorySheduler
         private void nextStepAfterNetworkScan()
         {
             mainWindow.setProgress(0);
-            mapView = new MapView(searchNextDevices, reinicializeStaticBeacons, reinicializeCart, editMap);
             editMapView = new EditMapView(finishEditingMap, detectMapPoints, changeDeviceForDetectingPointOnMap);
+            editMapView.setStaticBeaconsPoints(staticBeacons);
+            editMapView.setMapPoints(mapPoints);
+            editMapView.setMapLines(mapLines);
+            mapView = new MapView(searchNextDevices, reinicializeStaticBeacons, reinicializeCart, editMap, editMapView.getResources());
+            mapView.setStaticBeaconsPoints(staticBeacons);
+            mapView.setMapPoints(mapPoints);
+            mapView.setMapLines(mapLines);
+            
             mainWindow.setView(mapView);
             mapView.addCarts(carts.Values.ToList());
             if (!connectToDashBoardAndStaticBeacons())
