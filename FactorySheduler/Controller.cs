@@ -44,7 +44,41 @@ namespace FactorySheduler
         private void inicialize()
         {
             MapPointInputServer mapPointInputServer = MapPointInputServer.getMapPointInputServer();
+            loadMap();
 
+            //TEST
+
+            //staticBeacons.Add(new Point(0, 0));
+            //staticBeacons.Add(new Point(100, 0));
+            //staticBeacons.Add(new Point(0, 100));
+            //staticBeacons.Add(new Point(100, 100));
+            //mapPoints.Add(new MapPoint(new Point(50, 50)));
+            //mapPoints.Add(new MapPoint(new Point(80, 20)));
+            //mapPoints.Add(new MapPoint(new Point(10, 20)));
+
+            //editMapView = new EditMapView(finishEditingMap, detectMapPoints, changeDeviceForDetectingPointOnMap);
+            //mainWindow.setView(editMapView);
+            //editMapView.setStaticBeaconsPoints(staticBeacons);
+            //editMapView.setMapPoints(mapPoints);
+            //editMapView.setMapLines(mapLines);
+
+            //nextStepAfterNetworkScan();
+            //mapView.startPeriodicRefresh();
+
+            //TEST
+
+            networkScanner = new NetworkScanner();
+            networkScanner.subscribeIPFoundObserver(createCart);
+            networkScannerView.subscribeButtonNextListener(nextStepAfterNetworkScan);
+            networkScannerView.subscribeButtonRefreshListener(scanNetwork);
+            scanNetwork();
+        }
+
+        
+        /// <summary>
+        /// Načte mapu uloženou do souborů
+        /// </summary>
+        private void loadMap() {
             try
             {
                 mapLines = MapMemory.DeSerializeObject<List<MapPoint[]>>("mapLines.xml");
@@ -64,33 +98,6 @@ namespace FactorySheduler
                 staticBeacons = MapMemory.DeSerializeObject<List<Point>>("staticBeacons.xml");
             }
             catch (FileNotFoundException) { }
-
-            //TEST
-
-            //staticBeacons.Add(new Point(0, 0));
-            //staticBeacons.Add(new Point(100, 0));
-            //staticBeacons.Add(new Point(0, 100));
-            //staticBeacons.Add(new Point(100, 100));
-            //mapPoints.Add(new MapPoint(new Point(50, 50)));
-            //mapPoints.Add(new MapPoint(new Point(80, 20)));
-            //mapPoints.Add(new MapPoint(new Point(10, 20)));
-
-            //editMapView = new EditMapView(finishEditingMap, detectMapPoints, changeDeviceForDetectingPointOnMap);
-            //mainWindow.setView(editMapView);
-            //editMapView.setStaticBeaconsPoints(staticBeacons);
-            //editMapView.setMapPoints(mapPoints);
-            //editMapView.setMapLines(mapLines);
-
-            nextStepAfterNetworkScan();
-            mapView.startPeriodicRefresh();
-
-            //TEST
-
-            //networkScanner = new NetworkScanner();
-            //networkScanner.subscribeIPFoundObserver(createCart);
-            //networkScannerView.subscribeButtonNextListener(nextStepAfterNetworkScan);
-            //networkScannerView.subscribeButtonRefreshListener(scanNetwork);
-            //scanNetwork();
         }
 
         /// <summary>
@@ -224,10 +231,10 @@ namespace FactorySheduler
         {
             mainWindow.setProgress(0);
             editMapView = new EditMapView(finishEditingMap, detectMapPoints, changeDeviceForDetectingPointOnMap);
+            mapView = new MapView(searchNextDevices, reinicializeStaticBeacons, reinicializeCart, editMap, editMapView.getResources());
             editMapView.setStaticBeaconsPoints(staticBeacons);
             editMapView.setMapPoints(mapPoints);
             editMapView.setMapLines(mapLines);
-            mapView = new MapView(searchNextDevices, reinicializeStaticBeacons, reinicializeCart, editMap, editMapView.getResources());
             mapView.setStaticBeaconsPoints(staticBeacons);
             mapView.setMapPoints(mapPoints);
             mapView.setMapLines(mapLines);
@@ -262,6 +269,13 @@ namespace FactorySheduler
                 List<Point> staticBeaconsPositions = dashboard.getStaticBeaconsPositions();
                 mapView.setStaticBeaconsPoints(staticBeaconsPositions);
                 editMapView.setStaticBeaconsPoints(staticBeaconsPositions);
+                if (!checkStaticBeaconsPositions(staticBeaconsPositions))
+                {
+                    mainWindow.showMessage(MessageTypeEnum.progress, "Mapa byla vytvořena v jiném souřadném systému majáků.");
+                    mapLines.Clear();
+                    mapPoints.Clear();
+                }
+                staticBeacons = staticBeaconsPositions;
             }
         }
 
@@ -333,7 +347,7 @@ namespace FactorySheduler
                         List<Point> staticBeaconsPositions = dashboard.getStaticBeaconsPositions();
                         mapView.setStaticBeaconsPoints(staticBeaconsPositions);
                         editMapView.setStaticBeaconsPoints(staticBeaconsPositions);
-                        pairArduinosWithBeacons();
+                        pairArduinosWithBeacons(staticBeaconsPositions);
                         return true;
                     }
                     else {
@@ -354,11 +368,28 @@ namespace FactorySheduler
         }
 
 
+        private bool checkStaticBeaconsPositions(List<Point> staticBeaconsPositions) {
+            bool mainEaual = true;
+            foreach (Point point in staticBeacons)
+            {
+                bool equals = false;
+                foreach (Point point2 in staticBeaconsPositions)
+                {
+                    if (point.Equals(point2))
+                    {
+                        equals = true;
+                        break;
+                    }
+                }
+                mainEaual = mainEaual && equals;
+            }
+            return mainEaual;
+        }
 
         /// <summary>
         /// Spáruje adresy nalezených majáků s Arduino zařízením
         /// </summary>
-        private void pairArduinosWithBeacons()
+        private void pairArduinosWithBeacons(List<Point> newStaticBeaconsPosition)
         {
             BackgroundWorker bw = new BackgroundWorker();
             bw.WorkerReportsProgress = true;
@@ -422,6 +453,14 @@ namespace FactorySheduler
                 }
                 mainWindow.showMessage(MessageTypeEnum.success, "Párování bylo dokončeno.");
                 mapView.startPeriodicRefresh();
+
+                if (!checkStaticBeaconsPositions(newStaticBeaconsPosition))
+                {
+                    mainWindow.showMessage(MessageTypeEnum.error, "Mapa byla vytvořena v jiném souřadném systému majáků.");
+                    mapLines.Clear();
+                    mapPoints.Clear();
+                }
+                staticBeacons = newStaticBeaconsPosition;
             });
 
             bw.RunWorkerAsync();
