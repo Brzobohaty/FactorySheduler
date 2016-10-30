@@ -52,9 +52,10 @@ namespace FactorySheduler
             //staticBeacons.Add(new Point(100, 0));
             //staticBeacons.Add(new Point(0, 100));
             //staticBeacons.Add(new Point(100, 100));
+
             //mapPoints.Add(new MapPoint(new Point(50, 50)));
-            //mapPoints.Add(new MapPoint(new Point(80, 20)));
-            //mapPoints.Add(new MapPoint(new Point(10, 20)));
+            //mapPoints.Add(new MapPoint(new Point(200, 20)));
+            //mapPoints.Add(new MapPoint(new Point(10, 200)));
 
             //editMapView = new EditMapView(finishEditingMap, detectMapPoints, changeDeviceForDetectingPointOnMap);
             //mainWindow.setView(editMapView);

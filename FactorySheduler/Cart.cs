@@ -67,8 +67,9 @@ namespace FactorySheduler
         [DisplayName("Délka vozíku")]
         [Description("Délka vozíku [cm]")]
         public double longg { get; protected set; } //délka vozíku
-
-    public int angle { get; set; } = 45;
+        public int angle { get; set; } = 45;
+        [Browsable(false)]
+        public List<Point> path; //cesta, po které se má vozík aktuálně pohybovat
 
         public Cart(string ip, Dashboard dashboard, Action dashboarConnectionFaildCallback)
         {
@@ -175,7 +176,7 @@ namespace FactorySheduler
             periodicCheckerStatus.Enabled = true;
             periodicCheckerStatus.Elapsed += delegate
             {
-                getPositionFromArduinoAsync(delegate (Point position){});
+                getPositionFromArduinoAsync(delegate (Point position) { });
             };
         }
 
@@ -197,7 +198,8 @@ namespace FactorySheduler
             else
             {
                 isPositionActual = true;
-                if (errorType == "dashboard") {
+                if (errorType == "dashboard")
+                {
                     errorMessage = "";
                     errorType = "";
                 }
@@ -212,7 +214,7 @@ namespace FactorySheduler
         public virtual void getPositionFromArduinoAsync(Action<Point> callback)
         {
             BackgroundWorker bw = new BackgroundWorker();
-            Point position = new Point(0,0);
+            Point position = new Point(0, 0);
 
             bw.DoWork += new DoWorkEventHandler(delegate (object o, DoWorkEventArgs args)
             {
@@ -297,7 +299,8 @@ namespace FactorySheduler
                 if (content != "NO_SET")
                 {
                     string[] positions = content.Split(';');
-                    for (int i=0; i< positions.Length; i++) {
+                    for (int i = 0; i < positions.Length; i++)
+                    {
                         string[] xy = positions[i].Split(',');
                         int x = Int32.Parse(xy[0]);
                         int y = Int32.Parse(xy[1]);
@@ -320,7 +323,8 @@ namespace FactorySheduler
         /// Posune pozici tak, aby odpovídala prostředku vozíku.
         /// </summary>
         /// <returns>pozici uprostřed vozíku</returns>
-        protected Point shiftPosition(Point rawPosition) {
+        protected Point shiftPosition(Point rawPosition)
+        {
             //vystředění vůči bokům vozíku
             double sideShift = (distanceFromHedghogToLeftSideOfCart - distanceFromHedghogToRightSideOfCart) / 2;
             MathLibrary.Point position = new MathLibrary.Point(rawPosition.X, rawPosition.Y);
@@ -354,7 +358,8 @@ namespace FactorySheduler
                 }
             }
 
-            if (sideShift==0) {
+            if (sideShift == 0)
+            {
                 MathLibrary.Point[] distancePointsTemp = MathLibrary.getPointOnLineInDistance(normal, position, 20);
                 if (MathLibrary.isPointOnTheLeftSideOfVector(position, endPoint, distancePointsTemp[0]))
                 {
@@ -398,7 +403,7 @@ namespace FactorySheduler
         /// </summary>
         public virtual void moveFront()
         {
-            RestRequest request = new RestRequest("arduino/drive/100", Method.GET);
+            RestRequest request = new RestRequest("arduino/drive/180", Method.GET);
             client.Execute(request);
         }
 
@@ -407,7 +412,7 @@ namespace FactorySheduler
         /// </summary>
         public virtual void moveBack()
         {
-            RestRequest request = new RestRequest("arduino/drive/-100", Method.GET);
+            RestRequest request = new RestRequest("arduino/drive/-180", Method.GET);
             client.Execute(request);
         }
 
@@ -416,7 +421,7 @@ namespace FactorySheduler
         /// </summary>
         public virtual void turnLeft()
         {
-            RestRequest request = new RestRequest("arduino/raid/3", Method.GET);
+            RestRequest request = new RestRequest("arduino/raid/8", Method.GET);
             client.Execute(request);
         }
 
@@ -425,7 +430,7 @@ namespace FactorySheduler
         /// </summary>
         public virtual void turnRight()
         {
-            RestRequest request = new RestRequest("arduino/raid/-3", Method.GET);
+            RestRequest request = new RestRequest("arduino/raid/-8", Method.GET);
             client.Execute(request);
         }
 
@@ -433,7 +438,8 @@ namespace FactorySheduler
         /// Při změně hodnoty proměnné uloží hodnotu do EEPROM vozíku
         /// </summary>
         /// <param name="propertyName">název proměnné</param>
-        public virtual void propertyChanged(string propertyName) {
+        public virtual void propertyChanged(string propertyName)
+        {
             RestRequest request;
             if (propertyName == "distanceFromHedghogToBackOfCart" || propertyName == "distanceFromHedghogToFrontOfCart" || propertyName == "distanceFromHedghogToLeftSideOfCart" || propertyName == "distanceFromHedghogToRightSideOfCart")
             {
@@ -442,6 +448,23 @@ namespace FactorySheduler
             else {
                 request = new RestRequest("arduino/writeEEPROM/" + propertyName + "/" + this.GetType().GetProperty(propertyName).GetValue(this, null), Method.GET);
             }
+            client.Execute(request);
+        }
+
+        /// <summary>
+        /// Nastaví cestu vozíku
+        /// </summary>
+        /// <param name="path"></param>
+        public virtual void setPath(List<Point> path)
+        {
+            this.path = path;
+            string pathString = "";
+            foreach (var point in path)
+            {
+                pathString += point.X + "," + point.Y + ";";
+            }
+
+            RestRequest request = new RestRequest("arduino/path/" + pathString, Method.GET);
             client.Execute(request);
         }
     }
