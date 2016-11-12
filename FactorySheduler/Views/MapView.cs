@@ -21,13 +21,11 @@ namespace FactorySheduler.Views
         private Cart selectedCart; //právě vybraný vozík
         private Action<Cart> reinicializeCart; //callback při kliknutí na tlačítko reinicializace jednoho vozíku
         private const int sizeOfStaticBeacon = 10; //´velikost statického majáku v pixelech
-        private List<Point> staticBeacons; //pozice statických majáků
         private int minStaticBeaconValue = 99999999; //max souřadnice statických majáků
         private int maxStaticBeaconValue = 0; //min souřadnice statických majáků
-        private List<MapPoint[]> lines = new List<MapPoint[]>(); //seznam čar spojujících body na mapě
-        private List<MapPoint> mapPoints = new List<MapPoint>(); //Body na mapě
+        private Map map = new Map(); //mapa bodů a cest mezi nimi
         private ComponentResourceManager resourcesFromEditMapView; //zdroje s obrázky z editovací mapy
-
+        private bool waitingForClickOnMap = false; //příznak, že se čeká na kliknutí na mapu
 
         public MapView(Action buttonSearchNextDevicesCallback, Action buttonReinicializeStaticBeaconsCallback, Action<Cart> reinicializeCart, Action buttonEditMapCallback, ComponentResourceManager resourcesFromEditMapView)
         {
@@ -92,52 +90,37 @@ namespace FactorySheduler.Views
         }
 
         /// <summary>
-        /// Nastaví do mapy statické majáky
+        /// Nastaví body a čáry na mapě
         /// </summary>
-        /// <param name="staticBeacons"></param>
-        public void setStaticBeaconsPoints(List<Point> staticBeacons)
+        /// <param name="map">mapa bodů a cest mezi nimi</param>
+        public void setMap(Map map)
         {
-            minStaticBeaconValue = 99999999;
-            maxStaticBeaconValue = 0;
-            this.staticBeacons = staticBeacons;
-            foreach (Point beacon in staticBeacons)
+            this.map = map;
+            refreshAll();
+        }
+
+        /// <summary>
+        /// Zvýrazní danou cestu na mapě
+        /// </summary>
+        /// <param name="path">seznam bodů představujícíc cestu</param>
+        private void printPath(List<MapPoint> path)
+        {
+            clearPath();
+            foreach (var point in path)
             {
-                if (beacon.X < minStaticBeaconValue)
-                {
-                    minStaticBeaconValue = beacon.X;
-                }
-                if (beacon.X > maxStaticBeaconValue)
-                {
-                    maxStaticBeaconValue = beacon.X;
-                }
-                if (beacon.Y < minStaticBeaconValue)
-                {
-                    minStaticBeaconValue = beacon.Y;
-                }
-                if (beacon.Y > maxStaticBeaconValue)
-                {
-                    maxStaticBeaconValue = beacon.Y;
-                }
+                point.printPath = true;
             }
         }
 
         /// <summary>
-        /// Nastaví cesty na mapě
+        /// Odstraní veškeré zvýrazněné cesty na mapě
         /// </summary>
-        /// <param name="mapLines">seznam cest</param>
-        public void setMapLines(List<MapPoint[]> mapLines)
+        private void clearPath()
         {
-            lines = mapLines;
-        }
-
-        /// <summary>
-        /// Nastaví body na mapě
-        /// </summary>
-        /// <param name="mapPoints">Naměřené body</param>
-        public void setMapPoints(List<MapPoint> mapPoints)
-        {
-            this.mapPoints = mapPoints;
-            refreshAll();
+            foreach (var point in map.points.Values)
+            {
+                point.printPath = false;
+            }
         }
 
         /// <summary>
@@ -151,7 +134,7 @@ namespace FactorySheduler.Views
                         var g = e.Graphics;
                         g.SmoothingMode = SmoothingMode.AntiAlias;
                         Brush brush = new SolidBrush(Color.Green);
-                        foreach (Point beacon in staticBeacons)
+                        foreach (Point beacon in map.staticBeacons)
                         {
                             int x = (int)Math.Round(getRescaledValue(beacon.X, false, false));
                             int y = (int)Math.Round(getRescaledValue(beacon.Y, true, false));
@@ -173,7 +156,7 @@ namespace FactorySheduler.Views
                         g.SmoothingMode = SmoothingMode.AntiAlias;
                         Brush brush = new SolidBrush(Color.Black);
                         Color backgroundColor;
-                        foreach (MapPoint point in mapPoints)
+                        foreach (MapPoint point in map.points.Values)
                         {
                             backgroundColor = Color.LightSteelBlue;
                             switch (point.state)
@@ -228,9 +211,13 @@ namespace FactorySheduler.Views
                         var g = ee.Graphics;
                         g.SmoothingMode = SmoothingMode.AntiAlias;
 
-                        foreach (MapPoint[] line in lines)
+                        foreach (MapPoint[] line in map.lines)
                         {
                             Color color = Color.Black;
+                            if (line[0].printPath && line[1].printPath)
+                            {
+                                color = Color.Purple;
+                            }
                             using (var p = new Pen(color, 3))
                             {
                                 int x1 = (int)Math.Round(getRescaledValue(line[0].position.X, false, false));
@@ -271,8 +258,30 @@ namespace FactorySheduler.Views
         /// <summary>
         /// Všechno co se má v čase aktualzovat bude aktualizováno
         /// </summary>
-        private void refreshAll()
+        public void refreshAll()
         {
+            minStaticBeaconValue = 99999999;
+            maxStaticBeaconValue = 0;
+            foreach (Point beacon in map.staticBeacons)
+            {
+                if (beacon.X < minStaticBeaconValue)
+                {
+                    minStaticBeaconValue = beacon.X;
+                }
+                if (beacon.X > maxStaticBeaconValue)
+                {
+                    maxStaticBeaconValue = beacon.X;
+                }
+                if (beacon.Y < minStaticBeaconValue)
+                {
+                    minStaticBeaconValue = beacon.Y;
+                }
+                if (beacon.Y > maxStaticBeaconValue)
+                {
+                    maxStaticBeaconValue = beacon.Y;
+                }
+            }
+
             if (!propertyGrid.ContainsFocus)
             {
                 propertyGrid.Refresh();
@@ -423,6 +432,45 @@ namespace FactorySheduler.Views
         private void buttonEditMap_Click(object sender, EventArgs e)
         {
             buttonEditMapCallback();
+        }
+
+        private void buttonSelectPath_Click(object sender, EventArgs e)
+        {
+            waitingForClickOnMap = true;
+        }
+
+        /// <summary>
+        /// Bod na mapě, který odpovídá daným souřadnicím s určitou tolerancí
+        /// </summary>
+        /// <param name="location">souřadnice</param>
+        /// <returns>bod na mapě nebo null, pokud nevyhovuje žádný</returns>
+        private MapPoint getPoint(Point location)
+        {
+            foreach (MapPoint point in map.points.Values)
+            {
+                Point pointRescaled = new Point((int)Math.Round(getRescaledValue(point.position.X, false, false)), (int)Math.Round(getRescaledValue(point.position.Y, true, false)));
+
+                if (Math.Abs(location.X - pointRescaled.X) < sizeOfStaticBeacon && Math.Abs(location.Y - pointRescaled.Y) < sizeOfStaticBeacon)
+                {
+                    return point;
+                }
+            }
+            return null;
+        }
+
+        private void mapBox_MouseClick(object sender, MouseEventArgs e)
+        {
+            if (e.Button == MouseButtons.Left && waitingForClickOnMap)
+            {
+                MapPoint point = getPoint(e.Location);
+                if (point != null)
+                {
+                    waitingForClickOnMap = false;
+                    List<MapPoint> path = map.getShortestPath(selectedCart.position, point);
+                    printPath(path);
+                    Refresh();
+                }
+            }
         }
     }
 }

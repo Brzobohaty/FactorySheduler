@@ -63,15 +63,15 @@ namespace FactorySheduler
         /// <summary>
         /// Vrátí vzdálenost mezi body
         /// </summary>
-        /// <param name="xA">x souřadnice bodu A</param>
-        /// <param name="yA">y souřadnice bodu A</param>
-        /// <param name="xB">x souřadnice bodu B</param>
-        /// <param name="yB">y souřadnice bodu B</param>
+        /// <param name = "xA" > x souřadnice bodu A</param>
+        /// <param name = "yA" > y souřadnice bodu A</param>
+        /// <param name = "xB" > x souřadnice bodu B</param>
+        /// <param name = "yB" > y souřadnice bodu B</param>
         /// <returns></returns>
-        //public static double getPointsDistance(int xA, int yA, int xB, int yB)
-        //{
-        //    return Math.Sqrt(((xA - xB) * (xA - xB)) + ((yA - yB) * (yA - yB)));
-        //}
+        public static double getPointsDistance(int xA, int yA, int xB, int yB)
+        {
+            return Math.Sqrt(((xA - xB) * (xA - xB)) + ((yA - yB) * (yA - yB)));
+        }
 
         /// <summary>
         /// Vrátí levotočivý úhel určený třemi body

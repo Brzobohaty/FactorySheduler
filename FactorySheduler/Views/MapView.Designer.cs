@@ -37,7 +37,7 @@
             this.buttonBack = new System.Windows.Forms.Button();
             this.button5 = new System.Windows.Forms.Button();
             this.buttonLeft = new System.Windows.Forms.Button();
-            this.button3 = new System.Windows.Forms.Button();
+            this.buttonSelectPath = new System.Windows.Forms.Button();
             this.buttonFront = new System.Windows.Forms.Button();
             this.buttonReinicializeCart = new System.Windows.Forms.Button();
             this.button8 = new System.Windows.Forms.Button();
@@ -88,7 +88,7 @@
             this.tableLayoutPanel1.Controls.Add(this.buttonBack, 0, 2);
             this.tableLayoutPanel1.Controls.Add(this.button5, 0, 2);
             this.tableLayoutPanel1.Controls.Add(this.buttonLeft, 0, 1);
-            this.tableLayoutPanel1.Controls.Add(this.button3, 2, 0);
+            this.tableLayoutPanel1.Controls.Add(this.buttonSelectPath, 2, 0);
             this.tableLayoutPanel1.Controls.Add(this.buttonFront, 1, 0);
             this.tableLayoutPanel1.Controls.Add(this.buttonReinicializeCart, 0, 0);
             this.tableLayoutPanel1.Controls.Add(this.button8, 1, 1);
@@ -146,15 +146,16 @@
             this.buttonLeft.UseVisualStyleBackColor = true;
             this.buttonLeft.Click += new System.EventHandler(this.buttonLeft_Click);
             // 
-            // button3
+            // buttonSelectPath
             // 
-            this.button3.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.button3.Location = new System.Drawing.Point(149, 3);
-            this.button3.Name = "button3";
-            this.button3.Size = new System.Drawing.Size(68, 37);
-            this.button3.TabIndex = 2;
-            this.button3.Text = "button3";
-            this.button3.UseVisualStyleBackColor = true;
+            this.buttonSelectPath.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.buttonSelectPath.Location = new System.Drawing.Point(149, 3);
+            this.buttonSelectPath.Name = "buttonSelectPath";
+            this.buttonSelectPath.Size = new System.Drawing.Size(68, 37);
+            this.buttonSelectPath.TabIndex = 2;
+            this.buttonSelectPath.Text = "Vybrat cíl";
+            this.buttonSelectPath.UseVisualStyleBackColor = true;
+            this.buttonSelectPath.Click += new System.EventHandler(this.buttonSelectPath_Click);
             // 
             // buttonFront
             // 
@@ -252,6 +253,7 @@
             this.mapBox.Size = new System.Drawing.Size(664, 547);
             this.mapBox.TabIndex = 0;
             this.mapBox.TabStop = false;
+            this.mapBox.MouseClick += new System.Windows.Forms.MouseEventHandler(this.mapBox_MouseClick);
             // 
             // timerRefresh
             // 
@@ -333,7 +335,7 @@
         private System.Windows.Forms.Button buttonBack;
         private System.Windows.Forms.Button button5;
         private System.Windows.Forms.Button buttonLeft;
-        private System.Windows.Forms.Button button3;
+        private System.Windows.Forms.Button buttonSelectPath;
         private System.Windows.Forms.Button buttonFront;
         private System.Windows.Forms.Button button8;
         private System.Windows.Forms.Button buttonRight;

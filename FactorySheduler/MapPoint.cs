@@ -29,36 +29,60 @@ namespace FactorySheduler
         [Description("Aktuální chyba na daném zařízení.")]
         [ReadOnly(true)]
         public string error { get; set; } //stav zařízení na daném bodě
-        //private List<MapPoint> paths = new List<MapPoint>(); //seynam bodů do kterých vede cesta z tohoto bodu
+        [Browsable(false)]
+        private Dictionary<string, double> neighborsDistances = new Dictionary<string, double>(); //slovník hran, kde klíč je id uzlu do kterého hrana vede a hodnota je váha hrany (vzdálenost)
+        [Browsable(false)]
         private DeviceOnPoint device; //zařízení na tomto bodě (UDP virtualizace)
+        [Browsable(false)]
         private Action updateStatusCallback; //callback při aktualizaci statusu
         [Browsable(false)]
         public string state { get; set; } //stav zařízení na daném bodě
+        [Browsable(false)]
+        public string id { get; set; } //unikátní id tohoto bodu
+        [Browsable(false)]
+        public bool printPath = false; //přiznak, že tento bod je součástí vykreslované cesty
 
         private MapPoint() { }
 
         public MapPoint(Point position)
         {
             this.position = position;
+            id = Convert.ToBase64String(Guid.NewGuid().ToByteArray());
             type = PointTypeEnum.init;
         }
 
         /// <summary>
-        /// Přidání bodu, do/z kterého vede cesta k tomuhle bodu
+        /// Incialiyuje bod po načtení ze souboru
         /// </summary>
-        /// <param name="point"> druhý bod</param>
-        public void addPath(MapPoint point)
-        {
-            //paths.Add(point);
+        public void inicialize() {
+            setDevice();
+            printPath = false;
         }
 
         /// <summary>
-        /// Odebrání bodu, do/z kterého vede cesta k tomuhle bodu
+        /// Vrátí vzdálenosti k sousedním bodům
         /// </summary>
-        /// <param name="point"> druhý bod</param>
-        public void removePath(MapPoint point)
+        /// <returns>slovník vzdáleností</returns>
+        public Dictionary<string, double> getNeighborsDistances(){
+            return neighborsDistances;
+        }
+
+        /// <summary>
+        /// Přidání hrany vedoucí z/do tohoto bodu
+        /// </summary>
+        /// <param name="point"> druhý bod do kterého hrana vede</param>
+        public void addNeighbor(MapPoint point)
         {
-            //paths.Remove(point);
+            neighborsDistances.Add(point.id, MathLibrary.getPointsDistance(point.position.X, point.position.Y, position.X, position.Y));
+        }
+
+        /// <summary>
+        /// Odebrání hrany vedoucí z/do tohoto bodu
+        /// </summary>
+        /// <param name="point"> druhý bod do kterého hrana vede</param>
+        public void removeNeighbor(MapPoint point)
+        {
+            neighborsDistances.Remove(point.id);
         }
 
         /// <summary>

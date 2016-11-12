@@ -18,10 +18,7 @@ namespace FactorySheduler.Views
         private Action buttonDetectPointsCallback; //callback při kliknutí na tlačítko detekce bodů
         private Action changeDeviceForDetectingPointOnMap; //callback při kliknutí na talčítko změny detekovacího zařízení
         private const int sizeOfStaticBeacon = 10; //´velikost statického majáku v pixelech
-        private List<Point> staticBeacons = new List<Point>(); //pozice statických majáků
-        private List<MapPoint> mapPoints = new List<MapPoint>(); //Body na mapě
         private Cart detectingDevice; //zařízení, které detekuje body na mapě
-        private List<MapPoint[]> lines = new List<MapPoint[]>(); //seznam čar spojujících body
         private List<MapPoint[]> linesForDeleting = new List<MapPoint[]>(); //seznam čar, které mají být smazány
         private MapPoint[] markedLine; //zvýrazněná čára
         private int minStaticBeaconValue = 99999999; //min souřadnice statických majáků
@@ -37,7 +34,8 @@ namespace FactorySheduler.Views
         private ContextMenu pointMenu; //menu při kliknutí pravým tlačítkem na bod na mapě
         Point currentPointRescaledTemp = new Point(); //bod v přepočítaných souřadnicicíh, na který bylo právě kliknuto
         MapPoint currentPointTemp = new MapPoint(Point.Empty); //bod ve skutečné souřadnicích, na který bylo právě kliknuto
-        System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(EditMapView));
+        Map map = new Map(); //mapa bodů a cest mezi nimi
+        ComponentResourceManager resources = new ComponentResourceManager(typeof(EditMapView));
 
         public EditMapView(Action buttonFinishCallback, Action buttonDetectPointsCallback, Action changeDeviceForDetectingPointOnMap)
         {
@@ -64,52 +62,12 @@ namespace FactorySheduler.Views
         }
 
         /// <summary>
-        /// Nastaví cesty na mapě
+        /// Nastaví body a čáry na mapě
         /// </summary>
-        /// <param name="mapLines">seznam cest</param>
-        public void setMapLines(List<MapPoint[]> mapLines)
+        /// <param name="map">mapa bodů a cest mezi nimi</param>
+        public void setMap(Map map)
         {
-            lines = mapLines;
-        }
-
-        /// <summary>
-        /// Nastaví naměřené body na mapě
-        /// </summary>
-        /// <param name="mapPoints">Naměřené body</param>
-        public void setMapPoints(List<MapPoint> mapPoints)
-        {
-            this.mapPoints = mapPoints;
-            refreshAll();
-        }
-
-        /// <summary>
-        /// Nastaví do mapy statické majáky
-        /// </summary>
-        /// <param name="staticBeacons"></param>
-        public void setStaticBeaconsPoints(List<Point> staticBeacons)
-        {
-            minStaticBeaconValue = 99999999;
-            maxStaticBeaconValue = 0;
-            this.staticBeacons = staticBeacons;
-            foreach (Point beacon in staticBeacons)
-            {
-                if (beacon.X < minStaticBeaconValue)
-                {
-                    minStaticBeaconValue = beacon.X;
-                }
-                if (beacon.X > maxStaticBeaconValue)
-                {
-                    maxStaticBeaconValue = beacon.X;
-                }
-                if (beacon.Y < minStaticBeaconValue)
-                {
-                    minStaticBeaconValue = beacon.Y;
-                }
-                if (beacon.Y > maxStaticBeaconValue)
-                {
-                    maxStaticBeaconValue = beacon.Y;
-                }
-            }
+            this.map = map;
             refreshAll();
         }
 
@@ -133,7 +91,7 @@ namespace FactorySheduler.Views
                         var g = e.Graphics;
                         g.SmoothingMode = SmoothingMode.AntiAlias;
                         Brush brush = new SolidBrush(Color.Green);
-                        foreach (Point beacon in staticBeacons)
+                        foreach (Point beacon in map.staticBeacons)
                         {
                             int x = (int)Math.Round(getRescaledValue(beacon.X, false, false));
                             int y = (int)Math.Round(getRescaledValue(beacon.Y, true, false));
@@ -176,7 +134,7 @@ namespace FactorySheduler.Views
                         g.SmoothingMode = SmoothingMode.AntiAlias;
                         Brush brush = new SolidBrush(Color.Black);
                         Color backgroundColor;
-                        foreach (MapPoint point in mapPoints)
+                        foreach (MapPoint point in map.points.Values)
                         {
                             if (point == selectedPoint)
                             {
@@ -229,9 +187,13 @@ namespace FactorySheduler.Views
                         var g = ee.Graphics;
                         g.SmoothingMode = SmoothingMode.AntiAlias;
 
-                        foreach (MapPoint[] line in lines)
+                        foreach (MapPoint[] line in map.lines)
                         {
                             Color color = Color.Black;
+                            if (line[0].printPath && line[1].printPath)
+                            {
+                                color = Color.Purple;
+                            }
                             if (line.Equals(markedLine))
                             {
                                 color = Color.Red;
@@ -284,8 +246,30 @@ namespace FactorySheduler.Views
         /// <summary>
         /// Všechno co se má v čase aktualzovat bude aktualizováno
         /// </summary>
-        private void refreshAll()
+        public void refreshAll()
         {
+            minStaticBeaconValue = 99999999;
+            maxStaticBeaconValue = 0;
+            foreach (Point beacon in map.staticBeacons)
+            {
+                if (beacon.X < minStaticBeaconValue)
+                {
+                    minStaticBeaconValue = beacon.X;
+                }
+                if (beacon.X > maxStaticBeaconValue)
+                {
+                    maxStaticBeaconValue = beacon.X;
+                }
+                if (beacon.Y < minStaticBeaconValue)
+                {
+                    minStaticBeaconValue = beacon.Y;
+                }
+                if (beacon.Y > maxStaticBeaconValue)
+                {
+                    maxStaticBeaconValue = beacon.Y;
+                }
+            }
+
             mapBox.Refresh();
         }
 
@@ -295,16 +279,7 @@ namespace FactorySheduler.Views
         /// <param name="newLine">nová cesta</param>
         private void addLine(MapPoint[] newLine)
         {
-            foreach (MapPoint[] oldLine in lines)
-            {
-                if ((oldLine[0].Equals(newLine[0]) && oldLine[1].Equals(newLine[1])) || (oldLine[0].Equals(newLine[1]) && oldLine[1].Equals(newLine[0])))
-                {
-                    return;
-                }
-            }
-            lines.Add(newLine);
-            newLine[0].addPath(newLine[1]);
-            newLine[1].addPath(newLine[0]);
+            map.addLine(newLine);
         }
 
         /// <summary>
@@ -315,7 +290,7 @@ namespace FactorySheduler.Views
         private void deletePoint(object sender, EventArgs e)
         {
             List<MapPoint[]> linesForDeleting = new List<MapPoint[]>();
-            foreach (MapPoint[] line in lines)
+            foreach (MapPoint[] line in map.lines)
             {
                 if (line[0].Equals(selectedPointTemp) || line[1].Equals(selectedPointTemp))
                 {
@@ -324,11 +299,9 @@ namespace FactorySheduler.Views
             }
             foreach (MapPoint[] line in linesForDeleting)
             {
-                lines.Remove(line);
-                line[0].removePath(line[1]);
-                line[1].removePath(line[0]);
+                map.removeLine(line);
             }
-            mapPoints.Remove(selectedPointTemp);
+            map.points.Remove(selectedPointTemp.id);
             mapBox.Refresh();
         }
 
@@ -341,9 +314,7 @@ namespace FactorySheduler.Views
         {
             MenuItem item = (MenuItem)sender;
             MapPoint[] line = linesForDeleting.ElementAt(item.Index - 5);
-            line[0].removePath(line[1]);
-            line[1].removePath(line[0]);
-            lines.Remove(line);
+            map.removeLine(line);
             mapBox.Refresh();
         }
 
@@ -423,7 +394,7 @@ namespace FactorySheduler.Views
             }
 
             int index = 0;
-            foreach (MapPoint[] line in lines)
+            foreach (MapPoint[] line in map.lines)
             {
                 if (line[0].Equals(currentPoint) || line[1].Equals(currentPoint))
                 {
@@ -629,7 +600,7 @@ namespace FactorySheduler.Views
         {
             currentPointRescaledTemp = new Point();
             currentPointTemp = new MapPoint(Point.Empty);
-            foreach (MapPoint point in mapPoints)
+            foreach (MapPoint point in map.points.Values)
             {
                 Point pointRescaled = new Point((int)Math.Round(getRescaledValue(point.position.X, false, false)), (int)Math.Round(getRescaledValue(point.position.Y, true, false)));
 
