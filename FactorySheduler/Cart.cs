@@ -78,13 +78,13 @@ namespace FactorySheduler
             name = ip;
             alias = ip.Substring(ip.Length - 3);
             this.dashboard = dashboard;
-            client = new RestClient("http://" + ip + "/");
+            client = new RestClient("http://" + ip + ":8080/");
             errorMessage = "";
         }
 
         private void setPropertiesFromEEPROM()
         {
-            RestRequest request = new RestRequest("arduino/readEEPROM/name", Method.GET);
+            RestRequest request = new RestRequest("readEEPROM/name", Method.GET);
             request.Timeout = 3000;
             IRestResponse response = client.Execute(request);
             HttpStatusCode status = response.StatusCode;
@@ -96,7 +96,7 @@ namespace FactorySheduler
                     name = content;
                 }
             }
-            request = new RestRequest("arduino/readEEPROM/alias", Method.GET);
+            request = new RestRequest("readEEPROM/alias", Method.GET);
             request.Timeout = 3000;
             response = client.Execute(request);
             status = response.StatusCode;
@@ -108,7 +108,7 @@ namespace FactorySheduler
                     alias = content;
                 }
             }
-            request = new RestRequest("arduino/readEEPROM/distances", Method.GET);
+            request = new RestRequest("readEEPROM/distances", Method.GET);
             request.Timeout = 3000;
             response = client.Execute(request);
             status = response.StatusCode;
@@ -132,9 +132,9 @@ namespace FactorySheduler
         /// <returns>true, pokud je vše v pořádku</returns>
         public virtual bool checkConnectionToArduino()
         {
-            RestRequest request = new RestRequest("arduino/check/", Method.GET);
+            RestRequest request = new RestRequest("check/", Method.GET);
 
-            //RestRequest request = new RestRequest("arduino/{order}/", Method.GET);
+            //RestRequest request = new RestRequest("{order}/", Method.GET);
             //request.AddUrlSegment("order", "digital"); // replaces matching token in request.Resource
 
             // execute the request
@@ -237,7 +237,7 @@ namespace FactorySheduler
         /// <returns>0,0 pokud nastala chyba</returns>
         public virtual Point getPositionFromArduino()
         {
-            RestRequest request = new RestRequest("arduino/position/", Method.GET);
+            RestRequest request = new RestRequest("position/", Method.GET);
             request.Timeout = 3000;
             IRestResponse response = client.Execute(request);
             HttpStatusCode status = response.StatusCode;
@@ -288,7 +288,7 @@ namespace FactorySheduler
         /// <returns>List zaznamenanných bodů</returns>
         public virtual List<MapPoint> getMapPoints()
         {
-            RestRequest request = new RestRequest("arduino/read-map-points/", Method.GET);
+            RestRequest request = new RestRequest("read-map-points/", Method.GET);
             List<MapPoint> listOfPositions = new List<MapPoint>();
 
             IRestResponse response = client.Execute(request);
@@ -403,7 +403,7 @@ namespace FactorySheduler
         /// </summary>
         public virtual void moveFront()
         {
-            RestRequest request = new RestRequest("arduino/drive/180", Method.GET);
+            RestRequest request = new RestRequest("drive/180", Method.GET);
             client.Execute(request);
         }
 
@@ -412,7 +412,7 @@ namespace FactorySheduler
         /// </summary>
         public virtual void moveBack()
         {
-            RestRequest request = new RestRequest("arduino/drive/-180", Method.GET);
+            RestRequest request = new RestRequest("drive/-180", Method.GET);
             client.Execute(request);
         }
 
@@ -421,7 +421,7 @@ namespace FactorySheduler
         /// </summary>
         public virtual void turnLeft()
         {
-            RestRequest request = new RestRequest("arduino/raid/8", Method.GET);
+            RestRequest request = new RestRequest("raid/8", Method.GET);
             client.Execute(request);
         }
 
@@ -430,7 +430,7 @@ namespace FactorySheduler
         /// </summary>
         public virtual void turnRight()
         {
-            RestRequest request = new RestRequest("arduino/raid/-8", Method.GET);
+            RestRequest request = new RestRequest("raid/-8", Method.GET);
             client.Execute(request);
         }
 
@@ -443,10 +443,10 @@ namespace FactorySheduler
             RestRequest request;
             if (propertyName == "distanceFromHedghogToBackOfCart" || propertyName == "distanceFromHedghogToFrontOfCart" || propertyName == "distanceFromHedghogToLeftSideOfCart" || propertyName == "distanceFromHedghogToRightSideOfCart")
             {
-                request = new RestRequest("arduino/writeEEPROM/distances/" + distanceFromHedghogToBackOfCart + "/" + distanceFromHedghogToFrontOfCart + "/" + distanceFromHedghogToLeftSideOfCart + "/" + distanceFromHedghogToRightSideOfCart, Method.GET);
+                request = new RestRequest("writeEEPROM/distances/" + distanceFromHedghogToBackOfCart + "/" + distanceFromHedghogToFrontOfCart + "/" + distanceFromHedghogToLeftSideOfCart + "/" + distanceFromHedghogToRightSideOfCart, Method.GET);
             }
             else {
-                request = new RestRequest("arduino/writeEEPROM/" + propertyName + "/" + this.GetType().GetProperty(propertyName).GetValue(this, null), Method.GET);
+                request = new RestRequest("writeEEPROM/" + propertyName + "/" + this.GetType().GetProperty(propertyName).GetValue(this, null), Method.GET);
             }
             client.Execute(request);
         }
@@ -464,7 +464,7 @@ namespace FactorySheduler
                 pathString += point.X + "," + point.Y + ";";
             }
 
-            RestRequest request = new RestRequest("arduino/path/" + pathString, Method.GET);
+            RestRequest request = new RestRequest("path/" + pathString, Method.GET);
             client.Execute(request);
         }
     }
