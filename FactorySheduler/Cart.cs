@@ -17,7 +17,9 @@ namespace FactorySheduler
         protected RestClient client; //client pro odesílání REST dotazů na Arduino
         protected System.Timers.Timer periodicCheckerPosition; //periodický kontroler polohy vozíku
         protected System.Timers.Timer periodicCheckerStatus; //periodický kontroler stavu vozíku
+        protected System.Timers.Timer periodicCheckerHeading; //periodický kontroler směru vozíku
         protected const int positionPeriodLength = 300; //délka periody v milisekundách - jak často se bude aktualizovat poloha vozíku
+        protected const int headingPeriodLength = 1000; //délka periody v milisekundách - jak často se bude kontrolovat směr vozíku
         protected const int statusPeriodLength = 10000; //délka periody v milisekundách - jak často se bude kontrolovat stab arduina
         protected Dashboard dashboard; //Objekt představující připojení k Dashboard aplikaci
         protected string errorType = ""; //typ chyby
@@ -67,7 +69,7 @@ namespace FactorySheduler
         [DisplayName("Délka vozíku")]
         [Description("Délka vozíku [cm]")]
         public double longg { get; protected set; } //délka vozíku
-        public int angle { get; set; } = 45;
+        public int angle { get; set; } = 0;
         [Browsable(false)]
         public List<Point> path; //cesta, po které se má vozík aktuálně pohybovat
 
@@ -157,7 +159,7 @@ namespace FactorySheduler
         }
 
         /// <summary>
-        /// Započne periodické kontrolování pozice robota
+        /// Započne periodické kontrolování pozice a směru robota
         /// </summary>
         public virtual void startPeriodicScanOfPosition()
         {
@@ -178,6 +180,28 @@ namespace FactorySheduler
             {
                 getPositionFromArduinoAsync(delegate (Point position) { });
             };
+
+            periodicCheckerHeading = new System.Timers.Timer();
+            periodicCheckerHeading.Interval = headingPeriodLength;
+            periodicCheckerHeading.Enabled = true;
+            periodicCheckerHeading.Elapsed += delegate
+            {
+                scanHeading();
+            };
+        }
+
+        /// <summary>
+        /// Aktuaizuje aktuální směr vozíku
+        /// </summary>
+        public virtual void scanHeading()
+        {
+            BackgroundWorker bw = new BackgroundWorker();
+            bw.DoWork += new DoWorkEventHandler(delegate (object o, DoWorkEventArgs args)
+            {
+                angle = getHeading();
+            });
+
+            bw.RunWorkerAsync();
         }
 
         /// <summary>
@@ -229,6 +253,29 @@ namespace FactorySheduler
             });
 
             bw.RunWorkerAsync();
+        }
+
+        /// <summary>
+        /// Vrátí aktuální směr vozíku ve stupních
+        /// </summary>
+        /// <returns>0 pokud nastala chyba</returns>
+        public virtual int getHeading()
+        {
+            RestRequest request = new RestRequest("heading/", Method.GET);
+            request.Timeout = 3000;
+            IRestResponse response = client.Execute(request);
+            HttpStatusCode status = response.StatusCode;
+            if (status == HttpStatusCode.OK)
+            {
+                string content = response.Content.Trim();
+                return Int32.Parse(content);
+                
+            }
+            else {
+                errorMessage = "Nelze se připojit k Arduino zařízení. Zkontrolujte, zda jste na stejné WiFi síti a zda je zařízení zapnuté. Případně ho restartujte.";
+                errorType = "arduino";
+                return 0;
+            }
         }
 
         /// <summary>
