@@ -33,14 +33,14 @@
             this.labelDvicesIPs = new System.Windows.Forms.Label();
             this.panel1 = new System.Windows.Forms.Panel();
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
-            this.button7 = new System.Windows.Forms.Button();
+            this.buttonRotateLeft = new System.Windows.Forms.Button();
             this.buttonBack = new System.Windows.Forms.Button();
-            this.button5 = new System.Windows.Forms.Button();
+            this.buttonRotateRight = new System.Windows.Forms.Button();
             this.buttonLeft = new System.Windows.Forms.Button();
             this.buttonSelectPath = new System.Windows.Forms.Button();
             this.buttonFront = new System.Windows.Forms.Button();
             this.buttonReinicializeCart = new System.Windows.Forms.Button();
-            this.button8 = new System.Windows.Forms.Button();
+            this.buttonStop = new System.Windows.Forms.Button();
             this.buttonRight = new System.Windows.Forms.Button();
             this.propertyGrid = new System.Windows.Forms.PropertyGrid();
             this.buttonsLayout = new System.Windows.Forms.FlowLayoutPanel();
@@ -84,14 +84,14 @@
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 33.33333F));
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 33.33334F));
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 33.33334F));
-            this.tableLayoutPanel1.Controls.Add(this.button7, 0, 2);
+            this.tableLayoutPanel1.Controls.Add(this.buttonRotateLeft, 0, 2);
             this.tableLayoutPanel1.Controls.Add(this.buttonBack, 0, 2);
-            this.tableLayoutPanel1.Controls.Add(this.button5, 0, 2);
+            this.tableLayoutPanel1.Controls.Add(this.buttonRotateRight, 0, 2);
             this.tableLayoutPanel1.Controls.Add(this.buttonLeft, 0, 1);
             this.tableLayoutPanel1.Controls.Add(this.buttonSelectPath, 2, 0);
             this.tableLayoutPanel1.Controls.Add(this.buttonFront, 1, 0);
             this.tableLayoutPanel1.Controls.Add(this.buttonReinicializeCart, 0, 0);
-            this.tableLayoutPanel1.Controls.Add(this.button8, 1, 1);
+            this.tableLayoutPanel1.Controls.Add(this.buttonStop, 1, 1);
             this.tableLayoutPanel1.Controls.Add(this.buttonRight, 2, 1);
             this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Bottom;
             this.tableLayoutPanel1.Location = new System.Drawing.Point(0, 417);
@@ -104,15 +104,16 @@
             this.tableLayoutPanel1.Size = new System.Drawing.Size(220, 130);
             this.tableLayoutPanel1.TabIndex = 1;
             // 
-            // button7
+            // buttonRotateLeft
             // 
-            this.button7.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.button7.Location = new System.Drawing.Point(3, 89);
-            this.button7.Name = "button7";
-            this.button7.Size = new System.Drawing.Size(67, 38);
-            this.button7.TabIndex = 6;
-            this.button7.Text = "button7";
-            this.button7.UseVisualStyleBackColor = true;
+            this.buttonRotateLeft.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.buttonRotateLeft.Image = ((System.Drawing.Image)(resources.GetObject("buttonRotateLeft.Image")));
+            this.buttonRotateLeft.Location = new System.Drawing.Point(3, 89);
+            this.buttonRotateLeft.Name = "buttonRotateLeft";
+            this.buttonRotateLeft.Size = new System.Drawing.Size(67, 38);
+            this.buttonRotateLeft.TabIndex = 6;
+            this.buttonRotateLeft.UseVisualStyleBackColor = true;
+            this.buttonRotateLeft.Click += new System.EventHandler(this.buttonRotateLeft_Click);
             // 
             // buttonBack
             // 
@@ -125,15 +126,16 @@
             this.buttonBack.UseVisualStyleBackColor = true;
             this.buttonBack.Click += new System.EventHandler(this.buttonBack_Click);
             // 
-            // button5
+            // buttonRotateRight
             // 
-            this.button5.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.button5.Location = new System.Drawing.Point(149, 89);
-            this.button5.Name = "button5";
-            this.button5.Size = new System.Drawing.Size(68, 38);
-            this.button5.TabIndex = 4;
-            this.button5.Text = "button5";
-            this.button5.UseVisualStyleBackColor = true;
+            this.buttonRotateRight.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.buttonRotateRight.Image = ((System.Drawing.Image)(resources.GetObject("buttonRotateRight.Image")));
+            this.buttonRotateRight.Location = new System.Drawing.Point(149, 89);
+            this.buttonRotateRight.Name = "buttonRotateRight";
+            this.buttonRotateRight.Size = new System.Drawing.Size(68, 38);
+            this.buttonRotateRight.TabIndex = 4;
+            this.buttonRotateRight.UseVisualStyleBackColor = true;
+            this.buttonRotateRight.Click += new System.EventHandler(this.buttonRotateRight_Click);
             // 
             // buttonLeft
             // 
@@ -179,15 +181,16 @@
             this.buttonReinicializeCart.UseVisualStyleBackColor = true;
             this.buttonReinicializeCart.Click += new System.EventHandler(this.buttonReinicializeCart_Click);
             // 
-            // button8
+            // buttonStop
             // 
-            this.button8.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.button8.Location = new System.Drawing.Point(76, 46);
-            this.button8.Name = "button8";
-            this.button8.Size = new System.Drawing.Size(67, 37);
-            this.button8.TabIndex = 7;
-            this.button8.Text = "button8";
-            this.button8.UseVisualStyleBackColor = true;
+            this.buttonStop.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.buttonStop.Image = ((System.Drawing.Image)(resources.GetObject("buttonStop.Image")));
+            this.buttonStop.Location = new System.Drawing.Point(76, 46);
+            this.buttonStop.Name = "buttonStop";
+            this.buttonStop.Size = new System.Drawing.Size(67, 37);
+            this.buttonStop.TabIndex = 7;
+            this.buttonStop.UseVisualStyleBackColor = true;
+            this.buttonStop.Click += new System.EventHandler(this.buttonStop_Click);
             // 
             // buttonRight
             // 
@@ -331,13 +334,13 @@
         private System.Windows.Forms.PictureBox mapBox;
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel1;
         private System.Windows.Forms.Button buttonReinicializeCart;
-        private System.Windows.Forms.Button button7;
+        private System.Windows.Forms.Button buttonRotateLeft;
         private System.Windows.Forms.Button buttonBack;
-        private System.Windows.Forms.Button button5;
+        private System.Windows.Forms.Button buttonRotateRight;
         private System.Windows.Forms.Button buttonLeft;
         private System.Windows.Forms.Button buttonSelectPath;
         private System.Windows.Forms.Button buttonFront;
-        private System.Windows.Forms.Button button8;
+        private System.Windows.Forms.Button buttonStop;
         private System.Windows.Forms.Button buttonRight;
         private System.Windows.Forms.Button buttonReinicializeStaticBeacons;
         private System.Windows.Forms.Button buttonEditMap;

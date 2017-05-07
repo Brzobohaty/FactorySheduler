@@ -514,5 +514,32 @@ namespace FactorySheduler
             RestRequest request = new RestRequest("path/" + pathString, Method.GET);
             client.Execute(request);
         }
+
+        /// <summary>
+        /// Otočí vozík o maximální otočku doleva
+        /// </summary>
+        public virtual void rotateLeft()
+        {
+            RestRequest request = new RestRequest("max-turn/-1", Method.GET);
+            client.Execute(request);
+        }
+
+        /// <summary>
+        /// Otočí vozík o maximální otočku doprava
+        /// </summary>
+        public virtual void rotateRight()
+        {
+            RestRequest request = new RestRequest("max-turn/1", Method.GET);
+            client.Execute(request);
+        }
+
+        /// <summary>
+        /// Ukončí veškerou aktivitu robota
+        /// </summary>
+        public virtual void stop()
+        {
+            RestRequest request = new RestRequest("stop/", Method.GET);
+            client.Execute(request);
+        }
     }
 }

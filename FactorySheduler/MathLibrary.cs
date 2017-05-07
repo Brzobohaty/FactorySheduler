@@ -194,6 +194,8 @@ namespace FactorySheduler
             endPoint[1].X = roots.Item2.Real;
             if (line.vertical)
             {
+                endPoint[0].X = origin.X;
+                endPoint[1].X = origin.X;
                 endPoint[0].Y = origin.Y + Math.Sign(origin.Y) * distance;
                 endPoint[1].Y = origin.Y - Math.Sign(origin.Y) * distance;
             }

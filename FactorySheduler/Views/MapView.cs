@@ -472,5 +472,20 @@ namespace FactorySheduler.Views
                 }
             }
         }
+
+        private void buttonStop_Click(object sender, EventArgs e)
+        {
+            selectedCart.stop();
+        }
+
+        private void buttonRotateLeft_Click(object sender, EventArgs e)
+        {
+            selectedCart.rotateLeft();
+        }
+
+        private void buttonRotateRight_Click(object sender, EventArgs e)
+        {
+            selectedCart.rotateRight();
+        }
     }
 }
