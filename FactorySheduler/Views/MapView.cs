@@ -469,6 +469,7 @@ namespace FactorySheduler.Views
                     List<MapPoint> path = map.getShortestPath(selectedCart.position, point);
                     printPath(path);
                     Refresh();
+                    selectedCart.setPath(path);
                 }
             }
         }

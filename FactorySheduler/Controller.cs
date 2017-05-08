@@ -23,7 +23,7 @@ namespace FactorySheduler
         private EditMapView editMapView; //View pro editaci mapy
         private System.Windows.Forms.Timer periodicCheckerOfDashboardConnection = new System.Windows.Forms.Timer(); //periodický kontroler připojení k aplikaci dashboard (v případě selhání připojení)
         private System.Windows.Forms.Timer periodicCheckerOfMapPoints = new System.Windows.Forms.Timer(); //periodický kontroler naměřených bodů na mapě (v případě měření nových bodů mapy)
-        private const bool test = true; //proměnná, která indikuje, že se má v případě selhání připojit simulační wifi síť se simulačními vozíky
+        private const bool test = false; //proměnná, která indikuje, že se má v případě selhání připojit simulační wifi síť se simulačními vozíky
         private Cart mapPointCheckerDevice; //Zařízení s kterým se detekují bdy na mapě
         private Map map = new Map(); //mapa možných cest pohybu
 

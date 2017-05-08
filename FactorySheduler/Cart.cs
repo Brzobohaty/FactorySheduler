@@ -19,7 +19,7 @@ namespace FactorySheduler
         protected System.Timers.Timer periodicCheckerStatus; //periodický kontroler stavu vozíku
         protected System.Timers.Timer periodicCheckerHeading; //periodický kontroler směru vozíku
         protected const int positionPeriodLength = 300; //délka periody v milisekundách - jak často se bude aktualizovat poloha vozíku
-        protected const int headingPeriodLength = 1000; //délka periody v milisekundách - jak často se bude kontrolovat směr vozíku
+        protected const int headingPeriodLength = 5000; //délka periody v milisekundách - jak často se bude kontrolovat směr vozíku
         protected const int statusPeriodLength = 10000; //délka periody v milisekundách - jak často se bude kontrolovat stab arduina
         protected Dashboard dashboard; //Objekt představující připojení k Dashboard aplikaci
         protected string errorType = ""; //typ chyby
@@ -45,7 +45,6 @@ namespace FactorySheduler
         public Point position { get; protected set; } //poslední známá pozice
         [DisplayName("Aktuální pozice")]
         [Description("Příznak, zda je pozice aktuální nebo zda se jedná pouze o poslední známou pozici.")]
-        //TODO smazat nebo sprovoznit
         public bool isPositionActual { get; protected set; } //příznak, zda je pozice aktuální
         [Browsable(false)]
         public RadioButton asociatedButton { get; set; } //tlačítko ve view přiřazené k tomuto vozíku 
@@ -69,9 +68,10 @@ namespace FactorySheduler
         [DisplayName("Délka vozíku")]
         [Description("Délka vozíku [cm]")]
         public double longg { get; protected set; } //délka vozíku
+        [Browsable(false)]
         public int angle { get; set; } = 0;
         [Browsable(false)]
-        public List<Point> path; //cesta, po které se má vozík aktuálně pohybovat
+        public List<MapPoint> path; //cesta, po které se má vozík aktuálně pohybovat
 
         public Cart(string ip, Dashboard dashboard, Action dashboarConnectionFaildCallback)
         {
@@ -269,7 +269,7 @@ namespace FactorySheduler
             {
                 string content = response.Content.Trim();
                 return Int32.Parse(content);
-                
+
             }
             else {
                 errorMessage = "Nelze se připojit k Arduino zařízení. Zkontrolujte, zda jste na stejné WiFi síti a zda je zařízení zapnuté. Případně ho restartujte.";
@@ -502,16 +502,27 @@ namespace FactorySheduler
         /// Nastaví cestu vozíku
         /// </summary>
         /// <param name="path"></param>
-        public virtual void setPath(List<Point> path)
+        public virtual void setPath(List<MapPoint> path)
         {
             this.path = path;
-            string pathString = "";
+            Object[] pathArray = new Object[path.Count];
+            int i = 0;
             foreach (var point in path)
             {
-                pathString += point.X + "," + point.Y + ";";
+                pathArray[i] = new {
+                    x = point.position.X,
+                    y = point.position.Y
+                };
+                i++;
             }
+            Object pathJson = new
+            {
+                path = pathArray
+            };
 
-            RestRequest request = new RestRequest("path/" + pathString, Method.GET);
+            RestRequest request = new RestRequest("path/", Method.POST);
+            request.RequestFormat = DataFormat.Json;
+            request.AddJsonBody(pathJson);
             client.Execute(request);
         }
 
