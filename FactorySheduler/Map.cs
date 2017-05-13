@@ -127,10 +127,13 @@ namespace FactorySheduler
             double shortestDistance = int.MaxValue;
             MapPoint neerestMapPoint = null;
             foreach (var mapPoint in points.Values) {
-                double distance = MathLibrary.getPointsDistance(mapPoint.position.X, mapPoint.position.Y,point.X,point.Y);
-                if (distance < shortestDistance) {
-                    shortestDistance = distance;
-                    neerestMapPoint = mapPoint;
+                if (mapPoint.getNeighborsDistances().Count > 0) {
+                    double distance = MathLibrary.getPointsDistance(mapPoint.position.X, mapPoint.position.Y, point.X, point.Y);
+                    if (distance < shortestDistance)
+                    {
+                        shortestDistance = distance;
+                        neerestMapPoint = mapPoint;
+                    }
                 }
             }
 
@@ -199,6 +202,8 @@ namespace FactorySheduler
                     }
                 }
             }
+
+            path.Reverse();
 
             return path;
         }
